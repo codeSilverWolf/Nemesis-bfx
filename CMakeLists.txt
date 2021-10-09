@@ -8,15 +8,25 @@ project(NemesisUnlimitedBehaviorEngine LANGUAGES CXX VERSION 0.84)
 
 # This part is the only one that should be modified by the user wanting to compile Nemesis
 
-set(Qt5_DIR "C:/IT/Qt/5.14.1/msvc2017/lib/cmake/Qt5" CACHE PATH "Qt local path")
+# no need to specify path when using package from msys
+#set(Qt5_DIR "C:/IT/Qt/5.14.1/msvc2017/lib/cmake/Qt5" CACHE PATH "Qt local path")
 
-option(UseLocalBoost "Uses local copy of Boost instead of downloading it" ON)
-set(BOOST_ROOT "C:/IT/Boost_1.72.0" CACHE PATH "Boost local path" )
+# no need to specify path when using package from msys
+# option(UseLocalBoost "Uses local copy of Boost instead of downloading it" ON)
+# set(BOOST_ROOT "C:/DevTools/msys64/ucrt64" CACHE PATH "Boost local path" )
+
+#set(Boost_DEBUG ON)
+find_package(Boost 1.77.0
+             COMPONENTS regex
+             REQUIRED)
 
 #You have to use a local copy of Python source, not the binaries
 #Note: It MUST match the version set in Python.cmake
 option(UseLocalPython "Uses local copy of Python instead of downloading it" ON)
-set(PYTHON_ROOT "C:/IT/cpython" CACHE PATH "Python local path" )
+
+# IMPORTANT! set this to ucrt64 environment root path.
+# In default msys2 install it should be "C:/msys64/ucrt64"
+set(Python_ROOT_DIR "C:/DevTools/msys64/ucrt64" CACHE PATH "Msys2 Python root path" )
 
 ################################################################################
 # Use solution folders feature
@@ -30,7 +40,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 include(CMake/Python.cmake)
 include(CMake/Boost.cmake)
 include(CMake/Qt.cmake)
-add_subdirectory(external/hkxcmd)
+
+# do not compile hkxcmd as we only provide code for Main executable
+#add_subdirectory(external/hkxcmd)
 
 ################################################################################
 # Source groups
@@ -240,7 +252,8 @@ source_group("Source Files\\update\\animdata" FILES ${Source_Files__update})
 
 set(Source_Files__utilities
     "src/utilities/algorithm.cpp"
-    "src/utilities/animationsconvert.cpp"
+# file below is not needed for main executable 
+#    "src/utilities/animationsconvert.cpp"
     "src/utilities/compute.cpp"
     "src/utilities/conditions.cpp"
     "src/utilities/crc32.cpp"
@@ -252,6 +265,7 @@ set(Source_Files__utilities
     "src/utilities/scope.cpp"
     "src/utilities/stringsplit.cpp"
     "src/utilities/threadpool.cpp"
+    "src/utilities/writetextfile.cpp"
     )
 source_group("Source Files\\utilities" FILES ${Source_Files__utilities})
 
@@ -279,7 +293,6 @@ set(ALL_FILES
 # Target
 ################################################################################
 add_executable(${PROJECT_NAME} WIN32 ${ALL_FILES})
-
 ################################################################################
 # Include directories
 ################################################################################
@@ -296,9 +309,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC $ENV{UniversalCRTSdkDir}/Inclu
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     "UNICODE;"
     "_UNICODE;"
-    "WIN32;"
+    "WIN32"
     "WIN64"
-    "_WIN32_WINNT=0x0601"
+#    "_WIN32_WINNT=0x0601"
     "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING" #There are no alternatives
     )
 
@@ -306,12 +319,15 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 # Copy Python DLL
 ################################################################################
 
-message(STATUS "Copying Python DLL: ${Python_DLL_PATH}")
+# !!! disable - not needed for msys, and for final packaging we need way more
+# libraries. Use "utils/makemod.py" script instead. Run it from msys ucrt terminal.
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${Python_DLL_PATH}
-    ${CMAKE_BINARY_DIR}/${Python_DLL_NAME})
+# message(STATUS "Copying Python DLL: ${Python_DLL_PATH}")
+
+# add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#     ${Python_DLL_PATH}
+#     ${CMAKE_BINARY_DIR}/${Python_DLL_NAME})
 
 ################################################################################
 # Compile and link options
@@ -327,5 +343,60 @@ if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE "/bigobj")
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE BoostNemesis PythonNemesis Qt5Nemesis hkxcmd#add_subdirectory(external/hkxcmd)
+if(MINGW)
+    #Required
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        "-std=c++17"    # needed for clang language server, specifying in target_compile_features is not enough(broken?) for newest clang to properly pick standard
+        "-Wa,-mbig-obj" # REQUIRED due to large number of used templates !!! 
+        
+        # enable debug - TODO: disable in release
+        "-ggdb"     # enable debugging 
+        "-fno-lto"  # disable lto optimizations for faster linking time
+    )
+    target_link_options(${PROJECT_NAME} PRIVATE
+        # TODO: disable in release, options used to speed up looooooooong link times in msys2
+        "--verbose"
+        "-fno-lto"
+    )
+endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE BoostNemesis PythonNemesis Qt5Nemesis #hkxcmd #add_subdirectory(external/hkxcmd)
 )
+
+set(CMAKE_VERBOSE_MAKEFILE TRUE)
+
+#add doxygen target
+
+find_package( Doxygen )
+
+if ( DOXYGEN_FOUND )
+
+set( DOXYGEN_OUTPUT_DIRECTORY doxygen )
+set( DOXYGEN_COLLABORATION_GRAPH YES )
+set( DOXYGEN_EXTRACT_ALL YES )
+set( DOXYGEN_CLASS_DIAGRAMS YES )
+set( DOXYGEN_HIDE_UNDOC_RELATIONS NO )
+set( DOXYGEN_HAVE_DOT YES )
+set( DOXYGEN_CLASS_GRAPH YES )
+set( DOXYGEN_CALL_GRAPH YES )
+set( DOXYGEN_CALLER_GRAPH YES )
+set( DOXYGEN_COLLABORATION_GRAPH YES )
+set( DOXYGEN_BUILTIN_STL_SUPPORT YES )
+set( DOXYGEN_EXTRACT_PRIVATE YES )
+set( DOXYGEN_EXTRACT_PACKAGE YES )
+set( DOXYGEN_EXTRACT_STATIC YES )
+set( DOXYGEN_EXTRACT_LOCALMETHODS YES )
+set( DOXYGEN_UML_LOOK YES )
+set( DOXYGEN_UML_LIMIT_NUM_FIELDS 50 )
+set( DOXYGEN_TEMPLATE_RELATIONS YES )
+set( DOXYGEN_DOT_GRAPH_MAX_NODES 100 )
+set( DOXYGEN_MAX_DOT_GRAPH_DEPTH 0 )
+set( DOXYGEN_DOT_TRANSPARENT YES )
+
+doxygen_add_docs( doxygen "src" "include" )
+
+else()
+
+message( "Doxygen need to be installed to generate the doxygen documentation" )
+
+endif()

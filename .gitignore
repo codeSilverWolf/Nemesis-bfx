@@ -38,6 +38,10 @@ test environment/nemesis.ini
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
+# vscode and clang cache directory
+.cache/*
+.vscode/*
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
