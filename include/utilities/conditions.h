@@ -3,6 +3,9 @@
 #include <map>
 #include <memory>
 
+#include <unordered_map>
+#include <vector>
+
 #include "utilities/scope.h"
 
 #include "generate/animation/optionlist.h"

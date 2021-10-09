@@ -9,6 +9,7 @@
 #include <string>
 
 #include "utilities/atomiclock.h"
+#include "debuglog.h"
 
 class FileWriter
 {

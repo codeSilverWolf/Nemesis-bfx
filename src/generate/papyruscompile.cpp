@@ -1,6 +1,7 @@
 #include <QString>
 #include <QtCore/QProcess>
 
+#include "Global.h"
 #include "utilities/lastupdate.h"
 
 #include "generate/papyruscompile.h"

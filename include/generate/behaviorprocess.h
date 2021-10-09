@@ -3,6 +3,8 @@
 
 #include <unordered_set>
 
+#include <thread>
+
 #include <QtCore/QObject>
 
 #include "Global.h"

@@ -2,6 +2,7 @@
 #define ANIMATIONINFO_H_
 
 #include "generate/animation/optionlist.h"
+#include <filesystem>
 
 #pragma warning(disable : 4503)
 

@@ -1,6 +1,7 @@
 #ifndef DEBUGMSG_H_
 #define DEBUGMSG_H_
 
+#include <filesystem>
 #include <mutex>
 #include <memory>
 #include <sstream>

@@ -11,9 +11,12 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <cmath>
 
 #include <chrono>
+#include <condition_variable>
 
+#include "debuglog.h"
 #include "debugmsg.h"
 
 using VecChar = std::vector<char>;
