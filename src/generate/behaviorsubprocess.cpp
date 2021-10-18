@@ -2862,7 +2862,7 @@ void BehaviorSub::CompilingBehavior()
 
     if (!FolderCreate(GetFileDirectory(filename)) || !FolderCreate(GetFileDirectory(outputdir))) return;
 
-    ofstream output(filename);
+    ofstream output(filename.c_str());
     bool isClip = false;
     bool isBehavior = false;
     string clipName;
