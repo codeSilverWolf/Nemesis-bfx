@@ -19,6 +19,7 @@
 #include "generate/animation/animthreadinfo.h"
 #include "generate/animation/animationthread.h"
 #include "generate/animation/registeranimation.h"
+#include "generate/animation/singletemplate.h"
 
 typedef std::vector<std::string> VecStr;
 typedef std::unordered_map<std::string, std::string> SSMap;
@@ -27,7 +28,7 @@ typedef std::unordered_map<std::string, int> ID;
 
 struct proc;
 
-class AnimTemplate;
+//class AnimTemplate;
 
 namespace nemesis
 {
