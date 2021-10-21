@@ -26,7 +26,8 @@ void mainAnimEventInstall(string format,
                           bool isGroup,
                           bool isMaster,
                           proc& process);
-void ProcessFunction(string change,
+void ProcessFunction(proc& process,
+                     string change,
                      string line,
                      string format,
                      string behaviorFile,
@@ -40,8 +41,8 @@ void ProcessFunction(string change,
                      bool& isTrueMulti,
                      bool isGroup  = false,
                      bool isMaster = false,
-                     bool isMC     = true,
-                     proc& process = proc());
+                     bool isMC     = true
+                     );
 
 void AnimTemplate::ExamineTemplate(
     string _format, string _file, VecStr templatelines, bool isGroup, bool isMaster, OptionList optionlist)
@@ -105,7 +106,7 @@ void AnimTemplate::ExamineTemplate(
                 condition++;
                 string multiOption;
 
-                for (auto& it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
+                for (auto it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
                 {
                     if ((*it)->isMulti) multiOption = (*it)->conditions;
                 }
@@ -133,7 +134,7 @@ void AnimTemplate::ExamineTemplate(
 
                 string multiOption;
 
-                for (auto& it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
+                for (auto it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
                 {
                     if ((*it)->isMulti) multiOption = (*it)->conditions;
                 }
@@ -171,7 +172,7 @@ void AnimTemplate::ExamineTemplate(
 
                 string multiOption;
 
-                for (auto& it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
+                for (auto it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
                 {
                     if ((*it)->isMulti) multiOption = (*it)->conditions;
                 }
@@ -200,7 +201,7 @@ void AnimTemplate::ExamineTemplate(
 
                 string multiOption;
 
-                for (auto& it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
+                for (auto it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
                 {
                     if ((*it)->isMulti) multiOption = (*it)->conditions;
                 }
@@ -240,7 +241,7 @@ void AnimTemplate::ExamineTemplate(
 
                 string multiOption;
 
-                for (auto& it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
+                for (auto it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
                 {
                     if ((*it)->isMulti) multiOption = (*it)->conditions;
                 }
@@ -284,7 +285,7 @@ void AnimTemplate::ExamineTemplate(
             {
                 string multiOption;
 
-                for (auto& it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
+                for (auto it = generatedlines.rbegin(); it != generatedlines.rend(); ++it)
                 {
                     if ((*it)->isMulti) multiOption = (*it)->conditions;
                 }
@@ -400,7 +401,8 @@ void AnimTemplate::Process(const string& line,
             map<int, vector<shared_ptr<nemesis::scope>>> dummy1;
             vector<AddOnInfo> dummy2;
             bool dummy3;
-            ProcessFunction(change,
+            ProcessFunction(process,
+                            change,
                             line,
                             format,
                             behaviorFile,
@@ -414,8 +416,8 @@ void AnimTemplate::Process(const string& line,
                             dummy3,
                             isGroup,
                             isMaster,
-                            false,
-                            process);
+                            false
+                            );
             hasProcess = true;
         }
 
@@ -440,7 +442,7 @@ void AnimTemplate::Process(const string& line,
             vector<nemesis::MultiChoice> m_conditions;
             process.hasMC.insert(numline);
 
-            for (auto& itr = nemesis::regex_iterator(line, nemesis::regex("[\\s]+<!-- (.+?) -->[\\s]*?"));
+            for (auto itr = nemesis::regex_iterator(line, nemesis::regex("[\\s]+<!-- (.+?) -->[\\s]*?"));
                  itr != nemesis::regex_iterator();
                  ++itr)
             {
@@ -478,7 +480,7 @@ void AnimTemplate::Process(const string& line,
                 }
             }
 
-            for (auto& itr = nemesis::regex_iterator(line, nemesis::regex("\\$MC\\$"));
+            for (auto itr = nemesis::regex_iterator(line, nemesis::regex("\\$MC\\$"));
                  itr != nemesis::regex_iterator();
                  ++itr)
             {
@@ -493,7 +495,7 @@ void AnimTemplate::Process(const string& line,
         // get group node ID
         if (isGroup)
         {
-            for (auto& itr = nemesis::regex_iterator(line, nemesis::regex(format + "\\$([0-9]+)"));
+            for (auto itr = nemesis::regex_iterator(line, nemesis::regex(format + "\\$([0-9]+)"));
                  itr != nemesis::regex_iterator();
                  ++itr)
             {
@@ -505,7 +507,7 @@ void AnimTemplate::Process(const string& line,
                 hasProcess = true;
             }
 
-            for (auto& itr = nemesis::regex_iterator(line, nemesis::regex(format + "_group\\$([0-9]+)"));
+            for (auto itr = nemesis::regex_iterator(line, nemesis::regex(format + "_group\\$([0-9]+)"));
                  itr != nemesis::regex_iterator();
                  ++itr)
             {
@@ -519,7 +521,7 @@ void AnimTemplate::Process(const string& line,
         }
         else
         {
-            for (auto& itr = nemesis::regex_iterator(line, nemesis::regex(format + "_group\\$([0-9]+)"));
+            for (auto itr = nemesis::regex_iterator(line, nemesis::regex(format + "_group\\$([0-9]+)"));
                  itr != nemesis::regex_iterator();
                  ++itr)
             {
@@ -556,7 +558,7 @@ void AnimTemplate::Process(const string& line,
                 func = &proc::IDRegis;
             }
 
-            for (auto& itr = nemesis::regex_iterator(line, nemesis::regex("MID\\$([0-9]+)"));
+            for (auto itr = nemesis::regex_iterator(line, nemesis::regex("MID\\$([0-9]+)"));
                  itr != nemesis::regex_iterator();
                  ++itr)
             {
@@ -570,7 +572,7 @@ void AnimTemplate::Process(const string& line,
 
     if (isEnd)
     {
-        for (auto& itr = nemesis::regex_iterator(
+        for (auto itr = nemesis::regex_iterator(
                  line, nemesis::regex("<hkparam name\\=\"relativeToEndOfClip\">(.+?)<\\/hkparam>"));
              itr != nemesis::regex_iterator();
              ++itr)
@@ -582,7 +584,7 @@ void AnimTemplate::Process(const string& line,
                                  numline);
         }
 
-        for (auto& itr = nemesis::regex_iterator(
+        for (auto itr = nemesis::regex_iterator(
                  line, nemesis::regex("<hkparam name\\=\"localTime\">(.+?)<\\/hkparam>"));
              itr != nemesis::regex_iterator();
              ++itr)
@@ -594,7 +596,7 @@ void AnimTemplate::Process(const string& line,
         }
     }
 
-    for (auto& itr = nemesis::regex_iterator(
+    for (auto itr = nemesis::regex_iterator(
              line, nemesis::regex("<hkparam name\\=\"animationName\">(.+?)<\\/hkparam>"));
          itr != nemesis::regex_iterator();
          ++itr)
@@ -604,7 +606,7 @@ void AnimTemplate::Process(const string& line,
         process.installBlock(nemesis::scope(pos, pos + itr->str(1).length(), &proc::regisAnim), numline);
     }
 
-    for (auto& itr = nemesis::regex_iterator(
+    for (auto itr = nemesis::regex_iterator(
              line, nemesis::regex("<hkparam name\\=\"behaviorName\">(.+?)<\\/hkparam>"));
          itr != nemesis::regex_iterator();
          ++itr)
@@ -655,7 +657,7 @@ void stateInstall(string line,
     int intID;
     nemesis::regex expr(format + "\\[" + animOrder + "\\]\\[\\(S([0-9]*)\\+([0-9]+)\\)\\]");
 
-    for (auto& itr = nemesis::regex_iterator(change, expr); itr != nemesis::regex_iterator(); ++itr)
+    for (auto itr = nemesis::regex_iterator(change, expr); itr != nemesis::regex_iterator(); ++itr)
     {
         string ID     = itr->str(1);
         string number = itr->str(2);
@@ -729,7 +731,7 @@ void mainAnimEventInstall(string format,
                           bool isMaster,
                           proc& process)
 {
-    for (auto& itr = nemesis::regex_iterator(change, expr); itr != nemesis::regex_iterator(); ++itr)
+    for (auto itr = nemesis::regex_iterator(change, expr); itr != nemesis::regex_iterator(); ++itr)
     {
         bool num     = false;
         string first = itr->str(1);
@@ -803,7 +805,8 @@ void mainAnimEventInstall(string format,
     }
 }
 
-void ProcessFunction(string change,
+void ProcessFunction(proc& process,
+                     string change,
                      string line,
                      string format,
                      string behaviorFile,
@@ -817,14 +820,14 @@ void ProcessFunction(string change,
                      bool& isTrueMulti,
                      bool isGroup,
                      bool isMaster,
-                     bool isMC,
-                     proc& process)
+                     bool isMC
+                     )
 {
     if (isMaster && multiOption != format + "_group")
     {
         if (change.find(format + "[") != NOT_FOUND) ErrorMessage(1204, format, behaviorFile, numline, change);
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(format + "_group\\[(.*?)\\]"));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(format + "_group\\[(.*?)\\]"));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -899,7 +902,7 @@ void ProcessFunction(string change,
     {
         nemesis::regex expr(shortcut + "\\[(F|N|B|L|[0-9]*)\\]\\[END\\]");
 
-        for (auto& itr = nemesis::regex_iterator(change, expr); itr != nemesis::regex_iterator(); ++itr)
+        for (auto itr = nemesis::regex_iterator(change, expr); itr != nemesis::regex_iterator(); ++itr)
         {
             bool number  = false;
             string first = itr->str(1);
@@ -974,7 +977,7 @@ void ProcessFunction(string change,
         expr = nemesis::regex("(?<!" + shortcut + "\\[[F|N|B|L|\\d]\\]\\[)(?<!" + shortcut + "\\[\\]\\[)(?<!"
                               + shortcut + "\\[\\d\\d\\]\\[)(END)");
 
-        for (auto& itr = nemesis::regex_iterator(change, expr); itr != nemesis::regex_iterator(); ++itr)
+        for (auto itr = nemesis::regex_iterator(change, expr); itr != nemesis::regex_iterator(); ++itr)
         {
             if (isGroup && multiOption != format) ErrorMessage(1146, format, behaviorFile, numline);
 
@@ -995,7 +998,7 @@ void ProcessFunction(string change,
     {
         string expstr = shortcut + "\\[(F|N|B|L|[0-9]*)\\]\\[\\(S([0-9]*)\\+([0-9]+)\\)\\]";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1089,7 +1092,7 @@ void ProcessFunction(string change,
         {
             expstr = shortcut + "\\[\\(S([0-9]*)\\+([0-9]+)\\)\\]";
 
-            for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+            for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
                  itr != nemesis::regex_iterator();
                  ++itr)
             {
@@ -1114,7 +1117,7 @@ void ProcessFunction(string change,
         expstr = "(?<!" + shortcut + "\\[[F|N|B|L|\\d]\\]\\[)(?<!" + shortcut + "\\[\\]\\[)(?<!" + shortcut
                  + "\\[\\d\\d\\]\\[)(?<!" + shortcut + "\\[)\\(S([0-9]*)\\+([0-9]+)\\)";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1133,7 +1136,7 @@ void ProcessFunction(string change,
     {
         string expstr = shortcut + "\\[(F|N|B|L|[0-9]*)\\]\\[FilePath\\]";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1197,7 +1200,7 @@ void ProcessFunction(string change,
         expstr = "(?<!" + shortcut + "\\[[F|N|B|L|\\d]\\]\\[)(?<!" + shortcut + "\\[\\]\\[)(?<!" + shortcut
                  + "\\[\\d\\d\\]\\[)(FilePath)";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1214,7 +1217,7 @@ void ProcessFunction(string change,
     {
         string expstr = shortcut + "\\[(F|N|B|L|[0-9]*)\\]\\[FileName\\]";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1278,7 +1281,7 @@ void ProcessFunction(string change,
         expstr = "(?<!" + shortcut + "\\[[F|N|B|L|\\d]\\]\\[)(?<!" + shortcut + "\\[\\]\\[)(?<!" + shortcut
                  + "\\[\\d\\d\\]\\[)(FileName)";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1297,7 +1300,7 @@ void ProcessFunction(string change,
     {
         string expstr = shortcut + "\\[(F|N|B|L|[0-9]*)\\]\\[Path\\]";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1310,7 +1313,7 @@ void ProcessFunction(string change,
         expstr = "(?<!" + shortcut + "\\[[F|N|B|L|\\d]\\]\\[)(?<!" + shortcut + "\\[\\]\\[)(?<!" + shortcut
                  + "\\[\\d\\d\\]\\[)(Path)";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1328,7 +1331,7 @@ void ProcessFunction(string change,
         int counter   = 0;
         string expstr = shortcut + "\\[(F|N|B|L|[0-9]*)\\]\\[@AnimObject\\/([0-9]+)\\](\\[[0-9]+\\]|)";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1463,7 +1466,7 @@ void ProcessFunction(string change,
         expstr = "(?<!" + shortcut + "\\[[F|N|B|L|\\d]\\]\\[)(?<!" + shortcut + "\\[\\]\\[)(?<!" + shortcut
                  + "\\[\\d\\d\\]\\[)@AnimObject\\/([0-9]+)(\\[[0-9]+\\]|)";
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex(expstr));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1536,7 +1539,7 @@ void ProcessFunction(string change,
             isMaster,
             process);
 
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex("(\\{main_anim_event\\})"));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex("(\\{main_anim_event\\})"));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1549,7 +1552,7 @@ void ProcessFunction(string change,
                  : process.installBlock(blok, numline);
         }
 
-        for (auto& itr = nemesis::regex_iterator(
+        for (auto itr = nemesis::regex_iterator(
                  change,
                  nemesis::regex("(?<!" + shortcut + "\\[[F|N|B|L|\\d]\\]\\[)(?<!" + shortcut
                                 + "\\[\\]\\[)(?<!" + shortcut
@@ -1578,7 +1581,7 @@ void ProcessFunction(string change,
                 // include other anim group
                 // cont here
 
-                for (auto& itr = nemesis::regex_iterator(change,
+                for (auto itr = nemesis::regex_iterator(change,
                                                          nemesis::regex(format + "\\[(F|N|B|L|[0-9]*)\\]\\["
                                                                         + it->first + "(\\*|)\\]\\[" + addname
                                                                         + "\\](\\[[0-9]+\\]|)"));
@@ -1698,7 +1701,7 @@ void ProcessFunction(string change,
                     }
                 }
 
-                for (auto& itr = nemesis::regex_iterator(
+                for (auto itr = nemesis::regex_iterator(
                          change, nemesis::regex(it->first + "(\\*|)\\[" + addname + "\\](\\[[0-9]+\\]|)"));
                      itr != nemesis::regex_iterator();
                      ++itr)
@@ -1748,7 +1751,7 @@ void ProcessFunction(string change,
 
     if (change.find("LastState") != NOT_FOUND)
     {
-        for (auto& itr = nemesis::regex_iterator(change, nemesis::regex("LastState([0-9]*)"));
+        for (auto itr = nemesis::regex_iterator(change, nemesis::regex("LastState([0-9]*)"));
              itr != nemesis::regex_iterator();
              ++itr)
         {
@@ -1963,7 +1966,7 @@ void ProcessFunction(string change,
 
     if (change.find("MD", 0) != NOT_FOUND)
     {
-        for (auto& itr
+        for (auto itr
              = nemesis::regex_iterator(change, nemesis::regex(format + "\\[(F|N|B|L|[0-9]*)\\]\\[MD\\]"));
              itr != nemesis::regex_iterator();
              ++itr)
@@ -2026,7 +2029,7 @@ void ProcessFunction(string change,
             isMC ? lineblocks[blok->size].push_back(blok) : process.installBlock(*blok, numline);
         }
 
-        for (auto& itr
+        for (auto itr
              = nemesis::regex_iterator(change,
                                        nemesis::regex("(?<!" + format + "\\[[F|N|B|L|\\d]\\]\\[)(?<!" + format
                                                       + "\\[\\]\\[)(?<!" + format + "\\[\\d\\d\\]\\[)(MD)"));
@@ -2049,7 +2052,7 @@ void ProcessFunction(string change,
 
     if (change.find("RD", 0) != NOT_FOUND)
     {
-        for (auto& itr
+        for (auto itr
              = nemesis::regex_iterator(change, nemesis::regex(format + "\\[(F|N|B|L|[0-9]*)\\]\\[RD\\]"));
              itr != nemesis::regex_iterator();
              ++itr)
@@ -2111,7 +2114,7 @@ void ProcessFunction(string change,
             isMC ? lineblocks[blok->size].push_back(blok) : process.installBlock(*blok, numline);
         }
 
-        for (auto& itr
+        for (auto itr
              = nemesis::regex_iterator(change,
                                        nemesis::regex("(?<!" + format + "\\[[F|N|B|L|\\d]\\]\\[)(?<!" + format
                                                       + "\\[\\]\\[)(?<!" + format + "\\[\\d\\d\\]\\[)(RD)"));

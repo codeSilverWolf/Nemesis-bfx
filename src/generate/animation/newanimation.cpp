@@ -36,7 +36,7 @@ string linebreakSeparator(string line, VecStr& newlines)
 bool hasOptionPicked(const vector<unordered_map<string, bool>>& groupOptionPicked, int index, const string& key)
 {
     auto& opt  = groupOptionPicked[index];
-    auto& pick = opt.find(key);
+    const auto& pick = opt.find(key);
 
     return pick != opt.end();
 }
@@ -2106,7 +2106,7 @@ void eventIDReplacer(string& line,
         string fullEventName = line.substr(nextpos, line.find("]", nextpos) - nextpos + 1);
         string eventName     = nemesis::regex_replace(
             string(fullEventName), nemesis::regex(".*eventID[[](.*?)[]].*"), string("\\1"));
-        auto& eventItr = eventid.find(eventName);
+        const auto& eventItr = eventid.find(eventName);
 
         if (eventItr == eventid.end() || (eventItr->second == 0 && eventName != firstEvent))
         {
@@ -2134,7 +2134,7 @@ void variableIDReplacer(string& line,
         string fullVarName = line.substr(nextpos, line.find("]", nextpos) - nextpos + 1);
         string varName     = nemesis::regex_replace(
             string(fullVarName), nemesis::regex(".*variableID[[](.*)[]].*"), string("\\1"));
-        auto& varItr    = variableid.find(varName);
+        const auto& varItr    = variableid.find(varName);
 
         if (varItr == variableid.end() || (varItr->second == 0 && ZeroVariable != varName))
         {
@@ -2388,7 +2388,7 @@ bool clearGroupNum(string option2,
 
     if (grpopt != groupOption.end()) return isNot;
 
-    auto& pick = optionPicked.find(templine);
+    const auto& pick = optionPicked.find(templine);
 
     return isNot ? pick == optionPicked.end() : pick != optionPicked.end();
 }
@@ -2792,7 +2792,7 @@ bool NewAnimation::GetFirstCondition(string firstCondition,
     else
     {
         auto& opt  = groupOptionPicked[stoi(optionInfo[1])];
-        auto& pick = opt.find(optionInfo[2]);
+        const auto& pick = opt.find(optionInfo[2]);
 
         if (pick != opt.end())
         {
@@ -3733,6 +3733,9 @@ void NewAnimation::AnimDataLineProcess(AnimTemplate* originaltemplate,
     ID tmpId;
     ID tmpId2;
 
+    std::vector<int> fixedStateID;
+    std::vector<int> stateCountMultiplier;
+
     AnimThreadInfo animThrInfo(filepath,
                                filename,
                                mainAnimEvent,
@@ -3751,8 +3754,8 @@ void NewAnimation::AnimDataLineProcess(AnimTemplate* originaltemplate,
                                furnitureCount,
                                tmpId,
                                tmpId2,
-                               vector<int>(),
-                               vector<int>(),
+                               fixedStateID,
+                               stateCountMultiplier,
                                order,
                                lastOrder,
                                IDExist,

@@ -15,7 +15,11 @@
 #include "utilities/stringsplit.h"
 #if MULTITHREADED_UPDATE
 #include "utilities/threadpool.h"
+#else
+#include <thread>
 #endif
+
+
 
 #include "update/dataunification.h"
 #include "update/updateprocess.h"
@@ -840,7 +844,7 @@ bool UpdateFilesStart::VanillaDisassemble(const wstring& path,
 
                                 if (curline.find("<!-- Bone$N -->") == NOT_FOUND)
                                 {
-                                    for (auto& it = nemesis::regex_iterator(
+                                    for (auto it = nemesis::regex_iterator(
                                              curline, nemesis::regex("([0-9]+(\\.[0-9]+)?)"));
                                          it != nemesis::regex_iterator();
                                          ++it)
@@ -865,7 +869,7 @@ bool UpdateFilesStart::VanillaDisassemble(const wstring& path,
 
                                 storeline.push_back(curline.substr(0, match.position()));
 
-                                for (auto& it = nemesis::regex_iterator(curline, vector4);
+                                for (auto it = nemesis::regex_iterator(curline, vector4);
                                      it != nemesis::regex_iterator();
                                      ++it)
                                 {
@@ -893,7 +897,7 @@ bool UpdateFilesStart::VanillaDisassemble(const wstring& path,
                                         break;
                                 }
 
-                                for (auto& it = nemesis::regex_iterator(curline, vector4);
+                                for (auto it = nemesis::regex_iterator(curline, vector4);
                                      it != nemesis::regex_iterator();
                                      ++it)
                                 {

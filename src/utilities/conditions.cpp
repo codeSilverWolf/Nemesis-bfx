@@ -10,9 +10,24 @@ using namespace std;
 
 VecStr GetOptionInfo(string line, string format, string filename, int numline);
 VecStr GetOptionInfo(string line, string format, string masterformat, string filename, string multiOption, int numline);
-void ProcessFunction(string change, string line, string format, string behaviorFile, string multiOption, bool& isEnd, int numline, size_t curPos,
-	OptionList& optionlist, map<int, vector<shared_ptr<nemesis::scope>>>& lineblocks, vector<AddOnInfo>& addInfo, bool& isTrueMulti, bool isGroup = false, bool isMaster = false,
-	bool isMC = true, proc& process = proc());
+
+void ProcessFunction(proc& process,
+                     string change,
+                     string line,
+                     string format,
+                     string behaviorFile,
+                     string multiOption,
+                     bool& isEnd,
+                     int numline,
+                     size_t curPos,
+                     OptionList& optionlist,
+                     map<int, vector<shared_ptr<nemesis::scope>>>& lineblocks,
+                     vector<AddOnInfo>& addInfo,
+                     bool& isTrueMulti,
+                     bool isGroup  = false,
+                     bool isMaster = false,
+                     bool isMC     = true
+                     );
 
 nemesis::Condt::Condt(string condition, string format, string behaviorFile, string originalCondition, string multiOption, int numline, bool isGroup, bool isMaster,
 	OptionList& optionlist)
@@ -212,7 +227,7 @@ bool nemesis::Condt::isTrue(AnimThreadInfo& animthrinfo,
                             while (animMulti < a_size)
                             {
                                 auto& opt  = mtOptPick[groupMulti][animMulti];
-                                auto& pick = opt.find((*optioncondt)[3]);
+                                auto pick = opt.find((*optioncondt)[3]);
 
                                 result = isNot ? pick == opt.end() : pick != opt.end();
 
@@ -240,7 +255,7 @@ bool nemesis::Condt::isTrue(AnimThreadInfo& animthrinfo,
                     if (!a_multi)
                     {
                         auto& opt  = mtOptPick[groupMulti][animMulti];
-                        auto& pick = opt.find((*optioncondt)[3]);
+                        auto pick = opt.find((*optioncondt)[3]);
                         result     = isNot ? pick == opt.end() : pick != opt.end();
                     }
 
@@ -303,7 +318,7 @@ bool nemesis::Condt::isTrue(AnimThreadInfo& animthrinfo,
                 for (size_t i = 0; i < animMulti; ++i)
                 {
                     auto& opt  = gpOptPick[i];
-                    auto& pick = opt.find((*optioncondt)[2]);
+                    auto pick = opt.find((*optioncondt)[2]);
                     result     = isNot ? pick == opt.end() : pick != opt.end();
 
                     if (!result) break;
@@ -312,7 +327,7 @@ bool nemesis::Condt::isTrue(AnimThreadInfo& animthrinfo,
             else
             {
                 auto& opt  = gpOptPick[animMulti];
-                auto& pick = opt.find((*optioncondt)[2]);
+                auto pick = opt.find((*optioncondt)[2]);
                 result     = isNot ? pick == opt.end() : pick != opt.end();
             }
         }
@@ -414,7 +429,7 @@ bool nemesis::Condt::isMultiTrue(AnimThreadInfo& animinfo,
 			}
 
 			auto& opt  = animinfo.masterOptionPicked[groupMulti][animMulti];
-            auto& pick = opt.find((*optioncondt)[2]);
+            auto pick = opt.find((*optioncondt)[2]);
 			return pick != opt.end();
 		}
 		else
@@ -466,7 +481,7 @@ bool nemesis::Condt::isMultiTrue(AnimThreadInfo& animinfo,
 			}
 
             auto& opt  = animinfo.groupOptionPicked[animMulti];
-            auto& pick = opt.find((*optioncondt)[2]);
+            auto pick = opt.find((*optioncondt)[2]);
 			return pick != opt.end();
 		}
 		else
@@ -844,7 +859,8 @@ void nemesis::Condt::specialCondition(string condition, string format, string be
 		}
 
 		bool isEnd = false;
-		ProcessFunction(oriCondition1, oriCondition1, format, behaviorFile, multiOption, isEnd, numline, 0, optionlist, cmp1_block, cmpinfo1, cmpbool1);
+		proc process1;
+		ProcessFunction(process1,oriCondition1, oriCondition1, format, behaviorFile, multiOption, isEnd, numline, 0, optionlist, cmp1_block, cmpinfo1, cmpbool1);
 	}
 
 	if (oriCondition2.length() > 0)
@@ -855,7 +871,8 @@ void nemesis::Condt::specialCondition(string condition, string format, string be
 		}
 
 		bool isEnd = false;
-		ProcessFunction(oriCondition2, oriCondition2, format, behaviorFile, multiOption, isEnd, numline, 0, optionlist, cmp2_block, cmpinfo2, cmpbool2);
+		proc process2;
+		ProcessFunction(process2,oriCondition2, oriCondition2, format, behaviorFile, multiOption, isEnd, numline, 0, optionlist, cmp2_block, cmpinfo2, cmpbool2);
 	}
 
 	if (error) throw nemesis::exception();
@@ -1062,7 +1079,7 @@ void GetMultiFromAddOn(const nemesis::Condt& curcond,
                        int& optionMulti,
                        int& endMulti)
 {
-    auto& groupAnimInfo = animthrinfo.curAnim->GetGroupAnimInfo();
+    const auto& groupAnimInfo = animthrinfo.curAnim->GetGroupAnimInfo();
 
 	if (addinfo.header.find("@AnimObject/") != NOT_FOUND)
 	{
