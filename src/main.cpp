@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
                 delete nemesisInfo;
             }
         }
-        else if (programInitiateCheck())
+        else if (programInitiateCheck(&a))
         {
             NemesisEngine w;
             w.setWindowIcon(QIcon(":/icon/title icon.png"));

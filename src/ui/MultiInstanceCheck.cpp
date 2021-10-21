@@ -2,14 +2,17 @@
 
 #include "ui/ErrorMsgBox.h"
 #include "ui/MultiInstanceCheck.h"
+#include <iostream>
 
-#include <atlstr.h>
+#include <QSharedMemory>
+#include <qsharedmemory.h>
 
-bool isProgramAlreadyRunning();
 
-bool programInitiateCheck()
+bool isProgramAlreadyRunning(QObject *parent);
+
+bool programInitiateCheck(QObject *parent)
 {
-    if (isProgramAlreadyRunning())
+    if (isProgramAlreadyRunning(parent))
     {
         CEMsgBox* errorMsg = new CEMsgBox;
         errorMsg->setWindowTitle("Nemesis Unlimited Behavior Engine");
@@ -21,18 +24,17 @@ bool programInitiateCheck()
     return true;
 }
 
-bool isProgramAlreadyRunning()
+bool isProgramAlreadyRunning(QObject *parent)
 {
-    CString appName = CString(_T("Nemesis-Ultimate=Behavior+Engine"));
-    HANDLE m_mutex  = CreateMutexW(NULL, FALSE, appName);
+    QString appName = "Nemesis-Ultimate=Behavior+Engine";
+    QSharedMemory *m_sm = new QSharedMemory(appName,parent);
 
-    switch (GetLastError())
+    assert(m_sm);
+
+    if(!m_sm->create(1024) && m_sm->error() == QSharedMemory::AlreadyExists)
     {
-        case ERROR_SUCCESS: break;
-
-        case ERROR_ALREADY_EXISTS: return true;
-
-        default: return true;
+        std::cerr << "QSharedMemory exists - another instance running!!!\n";
+        return true;
     }
 
     return false;
