@@ -140,6 +140,8 @@ void GroupTemplate::getFunctionLines(shared_ptr<VecStr> functionline,
     size_t elementLine = 0;
 
 	vector<int> fixedStateID = stateID;
+    vector<int> stateCountMultiplier;
+
 	unordered_map<int, bool> IsConditionOpened;
 	vector<vector<unordered_map<string, bool>>> masterOptionPicked;
 
@@ -180,7 +182,7 @@ void GroupTemplate::getFunctionLines(shared_ptr<VecStr> functionline,
                                eventid,
                                variableid,
                                fixedStateID,
-                               vector<int>(),
+                               stateCountMultiplier,
                                0,
                                true,
                                IDExist,
