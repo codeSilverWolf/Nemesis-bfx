@@ -5,6 +5,7 @@
 #include "generate/animationdatatracker.h"
 #include "generate/animationsetdata.h"
 #include "generate/playerexclusive.h"
+#include <string>
 
 using namespace std;
 
@@ -578,7 +579,7 @@ ASDPosition(VecStr animData, string project, string header, string modcode, int 
 
     if (animData[linecount].find("<!-- ") != NOT_FOUND)
     {
-        if (!muteError) ErrorMessage(3007, modcode, "animationsetdatasinglefile.txt", linecount, header);
+        if (!muteError) ErrorMessage(3007, modcode, std::string("animationsetdatasinglefile.txt"), linecount, header);
     }
 
     bool mod = false;
