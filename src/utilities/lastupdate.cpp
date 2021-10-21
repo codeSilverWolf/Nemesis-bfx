@@ -3,6 +3,7 @@
 #include <atomic>
 #include <filesystem>
 #include <time.h>
+#include <sys/stat.h>
 
 #include "utilities/algorithm.h"
 #include "utilities/atomiclock.h"

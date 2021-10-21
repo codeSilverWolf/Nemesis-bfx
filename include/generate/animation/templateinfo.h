@@ -3,8 +3,10 @@
 
 #include <map>
 #include <unordered_set>
+#include <set>
 
 #include "utilities/alphanum.hpp"
+#include "generate/animation/optionlist.h"
 
 typedef std::set<std::string> SetStr;
 typedef std::unordered_set<std::string> USetStr;
