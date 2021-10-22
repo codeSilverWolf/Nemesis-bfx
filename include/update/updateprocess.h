@@ -159,7 +159,7 @@ private:
     const NemesisInfo* nemesisInfo;
 
     // timer
-    std::chrono::high_resolution_clock::time_point start_time = std::chrono::high_resolution_clock::now();
+    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
 };
 
 #endif
