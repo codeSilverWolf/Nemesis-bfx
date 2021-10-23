@@ -5,6 +5,14 @@
 
 namespace nemesis
 {
+    namespace detail
+    {
+        #define FWD(val) std::forward<decltype(val)>(val)
+                auto underlying_regex_search  = [](auto&&... args) { return boost::regex_search(FWD(args)...); };
+                auto underlying_regex_match   = [](auto&&... args) { return boost::regex_match(FWD(args)...); };
+                auto underlying_regex_replace = [](auto&&... args) { return boost::regex_replace(FWD(args)...); };
+        #undef FWD
+    }
     regex::regex(const std::string& str)
         : str_(str)
         , reg_(str_)
