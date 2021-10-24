@@ -2,7 +2,7 @@
 
 #include <atomic>
 #include <filesystem>
-#include <time.h>
+#include <ctime>
 #include <sys/stat.h>
 
 #include "utilities/algorithm.h"
@@ -53,9 +53,11 @@ string GetLastModified(string filename)
         struct stat buf;
         stat(filename.data(), &buf);
         char buffer[26];
-        ctime_s(buffer, sizeof(buffer), &buf.st_mtime);
-        buffer[24] = '\0';
-        return buffer;
+        size_t nret = std::strftime(buffer, 26, "%c", std::localtime(&buf.st_mtime));
+        if(nret > 0)
+        {
+            return buffer;
+        }
     }
     catch (...)
     {
@@ -72,9 +74,11 @@ wstring GetLastModified(wstring filename)
         struct _stat64i32 buf;
         _wstat(filename.data(), &buf);
         wchar_t buffer[26];
-        _wctime_s(buffer, sizeof(buffer), &buf.st_mtime);
-        buffer[24] = '\0';
-        return buffer;
+        size_t nret = std::wcsftime(buffer, 26, L"%c", std::localtime(&buf.st_mtime));
+        if(nret > 0)
+        {
+            return buffer;
+        }
     }
     catch (...)
     {
