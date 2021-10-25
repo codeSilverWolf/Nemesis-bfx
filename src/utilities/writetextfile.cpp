@@ -37,12 +37,14 @@ bool FileWriter::is_open() const
 
 void FileWriter::LockFreeWrite(const char* line)
 {
-    fwprintf(file, L"%s", nemesis::transform_to<wstring>(string(line + '\n')).c_str());
+    fwprintf(file, L"%s", nemesis::transform_to<wstring>(string(line)).c_str());
+    fwprintf(file, L"%s", L"\n");
 }
 
 void FileWriter::LockFreeWrite(const wchar_t* line)
 {
-    fwprintf(file, L"%s", line + L'\n');
+    fwprintf(file, L"%s", line);
+    fwprintf(file, L"%s", L"\n");
 }
 
 void FileWriter::LockFreeWrite(const string& line)
