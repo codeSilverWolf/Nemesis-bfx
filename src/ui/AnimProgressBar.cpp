@@ -123,7 +123,7 @@ void AnimProgressBar::ForeverLoop()
             // whole chunk only contains the gradient gap area
 
             double num   = 255 - std::fmin(255, std::fabs(aGap) / gap * opq);
-            style.append("stop:0 hsv(%1, " + QString::number(num) + ")");
+            style.append("stop:0 hsva(%1, " + QString::number(num) + ")");
         }
         else
         {
@@ -134,7 +134,7 @@ void AnimProgressBar::ForeverLoop()
         }
 
         double num = 255 - std::fmin(255, (1 + gap - aRunner) / gap * opq);
-        style.append(", stop:1 hsv(%1, " + QString::number(num) + ")");
+        style.append(", stop:1 hsva(%1, " + QString::number(num) + ")");
     }
     else if (SmallOrEqual(bRunner, 0))
     {
@@ -142,7 +142,7 @@ void AnimProgressBar::ForeverLoop()
         // only the gradient part of the opaque block is within the visible section at the start
 
         double num = 255 - std::fmax(0, bGap / gap * opq);
-        style.append("stop:0 hsv(%1, " + QString::number(num) + "), stop:" + QString::number(bGap)
+        style.append("stop:0 hsva(%1, " + QString::number(num) + "), stop:" + QString::number(bGap)
                      + " hsv(%1)");
     }
     else if (SmallOrEqual(aRunner, 0))
@@ -150,11 +150,11 @@ void AnimProgressBar::ForeverLoop()
         // <==[x|S|x]==>
         // only part of the opaque block is within the visible section at the start
 
-        style.append("stop:0 hsv(%1, " + trueopq + ")");
+        style.append("stop:0 hsva(%1, " + trueopq + ")");
 
         if (SmallOrEqual(bRunner, 1))
         {
-            style.append(", stop:" + QString::number(bRunner) + " hsv(%1, " + trueopq + ")");
+            style.append(", stop:" + QString::number(bRunner) + " hsva(%1, " + trueopq + ")");
 
             if (BigOrEqual(bGap, 1))
             {
@@ -162,7 +162,7 @@ void AnimProgressBar::ForeverLoop()
                 // the progress bar's chunk is small that right end of the gradient gap is hitting the end of the progress bar chunk
 
                 double num   = 255 - std::fmin(255, (bGap - 1) / gap * opq);
-                style.append(", stop:1 hsv(%1, " + QString::number(num) + ")");
+                style.append(", stop:1 hsva(%1, " + QString::number(num) + ")");
             }
             else
             {
@@ -186,11 +186,11 @@ void AnimProgressBar::ForeverLoop()
         // part of the left gradient is outside of the start point
 
         double anum = 255 - std::fmin(255, std::fabs(aGap) / gap * opq);
-        style.append("stop:0 hsv(%1, " + QString::number(anum) + "), stop:" + QString::number(aRunner) + " hsv(%1, " + trueopq + ")");
+        style.append("stop:0 hsva(%1, " + QString::number(anum) + "), stop:" + QString::number(aRunner) + " hsva(%1, " + trueopq + ")");
 
         if (SmallOrEqual(bRunner, 1))
         {
-            style.append(", stop:" + QString::number(bRunner) + " hsv(%1, " + trueopq + ")");
+            style.append(", stop:" + QString::number(bRunner) + " hsva(%1, " + trueopq + ")");
 
             if (BigOrEqual(bGap, 1))
             {
@@ -199,7 +199,7 @@ void AnimProgressBar::ForeverLoop()
 
                 double bextra = bGap - 1;
                 double num    = 255 - std::fmin(255, bextra / gap * opq);
-                style.append(", stop:1 hsv(%1, " + QString::number(num) + ")");
+                style.append(", stop:1 hsva(%1, " + QString::number(num) + ")");
             }
             else
             {
@@ -220,8 +220,8 @@ void AnimProgressBar::ForeverLoop()
         // ------<==[x|E|x]==>
         // only part of the opaque block is within the end point
 
-        style.append("stop:" + QString::number(aGap) + " hsv(%1), stop:" + QString::number(aRunner) + " hsv(%1, "
-                     + trueopq + "), stop:0.99995 hsv(%1, " + trueopq + "), stop:1 hsv(%1)");
+        style.append("stop:" + QString::number(aGap) + " hsv(%1), stop:" + QString::number(aRunner) + " hsva(%1, "
+                     + trueopq + "), stop:0.99995 hsva(%1, " + trueopq + "), stop:1 hsv(%1)");
     }
     else if (BigOrEqual(bGap, 1))
     {
@@ -231,8 +231,8 @@ void AnimProgressBar::ForeverLoop()
         double bextra = gap + bGap - 1;
         double bnum   = 255 - std::fmin(255, bextra / gap * opq);
         style.append("stop:" + QString::number(aGap) + " hsv(%1), stop:" + QString::number(aRunner)
-                     + " hsv(%1, " + trueopq + "), stop:" + QString::number(bRunner) + " hsv(%1, " + trueopq
-                     + "), stop:1 hsv(%1, " + QString::number(bnum) + ")");
+                     + " hsva(%1, " + trueopq + "), stop:" + QString::number(bRunner) + " hsva(%1, " + trueopq
+                     + "), stop:1 hsva(%1, " + QString::number(bnum) + ")");
     }
     else
     {
@@ -240,7 +240,7 @@ void AnimProgressBar::ForeverLoop()
         // the opaque block is flowing within the visible section
 
         style.append("stop:" + QString::number(aGap) + " hsv(%1), stop:" + QString::number(aRunner)
-                     + " hsv(%1, " + trueopq + "), stop:" + QString::number(bRunner) + " hsv(%1, " + trueopq
+                     + " hsva(%1, " + trueopq + "), stop:" + QString::number(bRunner) + " hsva(%1, " + trueopq
                      + "), stop:" + QString::number(bGap) + " hsv(%1)");
     }
 
