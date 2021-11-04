@@ -367,6 +367,10 @@ void NemesisEngine::GetSettings()
     }
     else
     {
+        // without cache existing we must default to english, to avoid throwing exception
+        // by  DebugMsg(language)  constructor called with empty language parameter
+        language = L"english";
+
         for (uint i = 0; i < languagelist.size(); ++i)
         {
             std::wstring curLang = GetFileName(languagelist[i]);
