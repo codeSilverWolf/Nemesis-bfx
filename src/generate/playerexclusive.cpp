@@ -53,6 +53,10 @@ void forcedCopy(sf::path animFile, sf::path newAnimFile, int count = 0)
 {
     try
     {
+        // workaround msys bug that makes file_copy fail if file exists even when using
+        // std::copy_options::overwrite_existing
+        if (isFileExist(newAnimFile) && !sf::is_directory(newAnimFile)) sf::remove(newAnimFile);
+
         sf::copy_file(animFile, newAnimFile, sf::copy_options::overwrite_existing);
     }
     catch (const exception& ex)
@@ -278,6 +282,11 @@ bool PCEAInstallation(const NemesisInfo* nemesisInfo)
 
     sf::path source("alternate animation\\nemesis pcea.script");
     sf::path pscfile(cachedir + L"\\Nemesis_PCEA_Core.psc");
+
+    // workaround msys bug that makes file_copy fail if file exists even when using
+    // std::copy_options::overwrite_existing
+    if (isFileExist(pscfile) && !sf::is_directory(pscfile)) sf::remove(pscfile);
+
     sf::copy_file(source, pscfile, sf::copy_options::overwrite_existing);
     DebugLogging(source.string());
     DebugLogging(pscfile.string());

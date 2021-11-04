@@ -15,8 +15,8 @@
 
 #pragma warning(disable : 4503)
 
+namespace sf = std::filesystem;
 using namespace std;
-namespace sf = filesystem;
 
 unordered_map<string, int> AAgroup_Counter;
 
@@ -122,6 +122,9 @@ bool AAInstallation(const NemesisInfo* nemesisInfo)
     sf::path source("alternate animation\\alternate animation.script");
     sf::path pscfile(cachedir + L"\\Nemesis_AA_Core.psc");
     sf::path filepath(destination.wstring() + L"\\Nemesis_AA_Core.pex");
+    // workaround msys bug that makes file_copy fail if file exists even when using
+    // std::copy_options::overwrite_existing
+    if (isFileExist(pscfile)) sf::remove(pscfile);
     sf::copy_file(source, pscfile, sf::copy_options::overwrite_existing);
     DebugLogging(pscfile.wstring());
     DebugLogging(filepath.wstring());
@@ -152,6 +155,9 @@ bool AAInstallation(const NemesisInfo* nemesisInfo)
     source            = sf::path("alternate animation\\alternate animation 2.script");
     sf::path pscfile2 = sf::path(cachedir + L"\\FNIS_aa.psc");
     filepath          = sf::path(destination.wstring() + L"\\FNIS_aa.pex");
+    // workaround msys bug that makes file_copy fail if file exists even when using
+    // std::copy_options::overwrite_existing
+    if (isFileExist(pscfile2)) sf::remove(pscfile2);
     sf::copy_file(source, pscfile2, sf::copy_options::overwrite_existing);
     DebugLogging(pscfile2.string());
     DebugLogging(filepath);

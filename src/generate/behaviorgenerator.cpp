@@ -2,6 +2,7 @@
 #include "nemesisinfo.h"
 
 #include <atomic>
+#include <filesystem>
 
 #include <QtCore/QProcess>
 
@@ -80,6 +81,10 @@ HkxCompiler::HkxCompiler()
     if (!isFileExist(tempdir)) sf::create_directories(tempdir);
 
     tempcompiler = tempdir + "hkxcmd.exe";
+    // workaround msys bug that makes file_copy fail if file exists even when using
+    // std::copy_options::overwrite_existing
+    if (isFileExist(tempcompiler)) sf::remove(sf::path(tempcompiler));
+
     sf::copy_file("hkxcmd.exe", tempcompiler, sf::copy_options::overwrite_existing);
 }
 
@@ -96,6 +101,10 @@ bool HkxCompiler::hkxcmdProcess(fpath xmlfile, fpath hkxfile, bool last) const
     string input  = tempdir + to_string(hkxcount.GetNum()) + "_" + xmlfile.filename().string();
     string output = tempdir + to_string(hkxcount.GetNum()) + "_" + hkxfile.filename().string();
     hkxcount.AddPath(input, output);
+    // workaround msys bug that makes file_copy fail if file exists even when using
+    // std::copy_options::overwrite_existing
+    if (isFileExist(input) && !sf::is_directory(input)) sf::remove(sf::path(input));
+
     sf::copy_file(xmlfile, input, sf::copy_options::overwrite_existing);
     DebugLogging("HKX Input: " + input + "\nHKX Output: " + output);
 
@@ -114,6 +123,10 @@ bool HkxCompiler::hkxcmdProcess(fpath xmlfile, fpath hkxfile, bool last) const
         failedBehaviors.push_back(hkxfile);
         return false;
     }
+
+    // workaround msys bug that makes file_copy fail if file exists even when using
+    // std::copy_options::overwrite_existing
+    if (isFileExist(hkxfile) && !sf::is_directory(hkxfile)) sf::remove(hkxfile);
 
     sf::copy_file(output, hkxfile, sf::copy_options::overwrite_existing);
     return true;
@@ -169,6 +182,10 @@ std::string HkxCompiler::xmlDecompile(fpath hkxfile, fpath xmlfile, const HkxCom
     string input  = tempdir + to_string(hkxcount.GetNum()) + "_" + hkxfile.filename().string();
     string output = tempdir + to_string(hkxcount.GetNum()) + "_" + xmlfile.filename().string();
     hkxcount.AddPath(input, output);
+    // workaround msys bug that makes file_copy fail if file exists even when using
+    // std::copy_options::overwrite_existing
+    if (isFileExist(input) && !sf::is_directory(input)) sf::remove(sf::path(input));
+
     sf::copy_file(hkxfile, input, sf::copy_options::overwrite_existing);
     DebugLogging("XML HKX Input: " + input + "\nXML HKX Output: " + output);
 

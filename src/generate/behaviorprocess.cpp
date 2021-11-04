@@ -858,6 +858,10 @@ void BehaviorStart::GenerateBehavior(std::thread*& checkThread)
 
     {
         wstring filename(nemesisInfo->GetDataPath() + L"scripts\\FNIS.pex");
+        // workaround msys bug that makes file_copy fail if file exists even when using
+        // std::copy_options::overwrite_existing
+        if(isFileExist(filename) && !sf::is_directory(sf::path(filename))) sf::remove(sf::path(filename));
+
         sf::copy_file(
             sf::path("alternate animation\\FNBE.pex"), filename, sf::copy_options::overwrite_existing);
         FILE* f;

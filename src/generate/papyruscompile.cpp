@@ -122,6 +122,11 @@ bool PapyrusCompileProcess(sf::path pscfile,
 
         for (wstring bkUp : backUpDepList)
         {
+            // workaround msys bug that makes file_copy fail if file exists even when using
+            // std::copy_options::overwrite_existing
+            auto workaround_path = sf::path(dep + L"\\" + bkUp);
+            if (isFileExist(workaround_path) && !sf::is_directory(workaround_path)) sf::remove(workaround_path);
+
             sf::copy_file(backUpDep + L"\\" + bkUp, dep + L"\\" + bkUp, sf::copy_options::overwrite_existing);
         }
     }

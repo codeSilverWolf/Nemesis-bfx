@@ -1,5 +1,6 @@
 #include <atomic>
 #include <condition_variable>
+#include <stdexcept>
 
 #include "debuglog.h"
 #include "nemesisinfo.h"
@@ -1804,6 +1805,23 @@ void BehaviorSub::CompilingBehavior()
 
                 if (isFileExist(cachedFile) && !sf::is_directory(cachedFile))
                 {
+                    // workaround msys bug that makes file_copy fail if file exists even when using
+                    // std::copy_options::overwrite_existing
+                    auto workaround_path = sf::path(outputdir);
+                    //workaround_path /= lowerBehaviorFile + ".hkx";
+                    if (isFileExist(workaround_path))
+                    {
+                        if (!sf::is_directory(workaround_path))
+                        {
+                            sf::remove(sf::path(workaround_path));
+                        }
+                        else
+                        {
+                            throw std::runtime_error("Msys copy_file workaround impossible path is directory"+workaround_path.generic_string());
+                        }
+                    }
+                    // end of workaround
+
                     sf::copy_file(cachedFile, outputdir, sf::copy_options::overwrite_existing); 
                 }
                 else if (isFileExist(outputdir) && !sf::is_directory(outputdir))
