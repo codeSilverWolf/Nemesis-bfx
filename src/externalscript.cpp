@@ -3,6 +3,8 @@
 //#undef pyslots
 //#define MS_NO_COREDLL
 #include <Python.h>
+#include <filesystem>
+#include <string>
 //#define pyslots
 
 #include <QtCore/QProcess>
@@ -12,6 +14,7 @@
 #include "generate/generator_utility.h"
 #include "generate/alternateanimation.h"
 
+#include "pylifecycle.h"
 #include "utilities/algorithm.h"
 
 using namespace std;
@@ -131,6 +134,21 @@ void PythonScriptThread(const wstring& filename, const wchar_t* filepath)
         {
             try
             {
+                // Setup python program name and embedded library paths before calling Py_Initialize().
+                // Zip archive containing Python libraries have to be in location 'python_libs/python39.zip'
+                // Libraries from lib-dynload have to be copied to 'python_libs/lib-dynload' and left there unpacked!!!
+                // Otherwise python can't unpack archive containing rest of libraries.
+                // Program name has to be set to nemesis main executable name.
+
+                std::filesystem::path current_path = std::filesystem::current_path();
+                std::filesystem::path python_lib_path = current_path / "python_libs/python39.zip";  // TODO: change this to get python version from Cmake
+                std::filesystem::path python_dynlib_path = current_path / "python_libs/lib-dynload";
+
+                std::wstring python_lib_paths = std::wstring(python_lib_path) + L";" + std::wstring(python_dynlib_path);
+
+                Py_SetProgramName(L"NemesisUnlimitedBehaviorEngine.exe");
+                Py_SetPath(python_lib_paths.c_str());
+
                 Py_Initialize();
                 PyRun_SimpleFile(f, nemesis::transform_to<string>(wstring(filepath)).c_str());
                 Py_Finalize();
