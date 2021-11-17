@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/regex.hpp>
+#include <optional>
 
 #include "Global.h"
 
