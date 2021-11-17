@@ -1,6 +1,9 @@
 #include "update/animdata/animdatacond.h"
 #include "Global.h"
 #include "utilities/writetextfile.h"
+#include <iostream>
+#include <stdexcept>
+#include <string>
 
 using namespace std;
 
@@ -31,6 +34,10 @@ void MasterAnimData::getprojectlines(const ProjectData& proj, VecStr& output, Ve
                 output.push_back("<!-- CLOSE -->");
                 output2.push_back(output.back());
                 break;
+            }
+            default:
+            {
+                std::cerr << "MasterAnimData::getprojectlines : wrong condition type\n";
             }
         }
     }
@@ -108,7 +115,15 @@ void MasterAnimData::getprojectlines(const ProjectData& proj, VecStr& output, Ve
     else if (proj.raw)
     {
         getlinkedline(proj.raw->first, output);
-        proj.raw->second->getlines(output2);
+        if(proj.raw->second)
+        {
+            proj.raw->second->getlines(output2);
+        }
+        else
+        {
+            std::cout << "ERROR? Null second pointer for MasterAnimData::ProjectData " << *(proj.raw->first.raw) << std::endl;
+            //throw std::runtime_error(std::string("Null second pointer for MasterAnimData::ProjectData")+*(proj.raw->first.raw));
+        }
     }
     else
     {
