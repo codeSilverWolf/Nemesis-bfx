@@ -37,6 +37,7 @@ namespace nemesis
         std::mutex queue_mutex;
         bool abort = false;
         bool sync = false;
+        bool error = false;
     };
 
     // add new work item to the pool
