@@ -33,7 +33,6 @@
 #include "generate/animation/templateprocessing.h"
 
 using namespace std;
-namespace sf = filesystem;
 
 struct NodeJoint;
 

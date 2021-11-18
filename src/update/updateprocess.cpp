@@ -2254,8 +2254,7 @@ void UpdateFilesStart::milestoneStart(string directory)
     m_RunningThread = 1;
     UpdateReset();
     start_time   = chrono::steady_clock::now();
-    namespace bf = sf;
-
+    
     try
     {
         DebugLogging("Nemesis Behavior Version: v" + GetNemesisVersion());
