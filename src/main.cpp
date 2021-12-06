@@ -1,6 +1,8 @@
 #include "Global.h"
 
+#include <algorithm>
 #include <filesystem>
+#include <iostream>
 
 #include <QtGui/QIcon>
 #include <QtWidgets/QApplication>
@@ -13,6 +15,8 @@
 #include "ui/MultiInstanceCheck.h"
 #include "ui/NemesisEngine.h"
 
+#include <windows.h>
+
 extern std::wstring stagePath;
 
 int main(int argc, char* argv[])
@@ -21,6 +25,14 @@ int main(int argc, char* argv[])
     bool update   = false;
     VecStr modlist;
     std::string logfile = "CriticalLog.txt";
+
+    #ifdef _WIN32
+    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+        std::cout << "Reattached to Console" << std::endl;
+    }
+    #endif
 
     try
     {
