@@ -159,7 +159,7 @@ int bonePatch(std::filesystem::path rigfile, int oribone, bool& newBone, const H
             using uchar     = unsigned char;
             bool startCount = false;
             bool start      = true;
-            uint pos        = line.find("NPC Root [Root]");
+            string::size_type pos        = line.find("NPC Root [Root]");
 
 			if (pos != NOT_FOUND && pos > 64)
             {
