@@ -322,12 +322,12 @@ const wstring& NemesisInfo::GetStagePath() const
     return stageDirectory;
 }
 
-const string& NemesisInfo::GetDataPathA() const
+const string NemesisInfo::GetDataPathA() const
 {
     return nemesis::transform_to<string>(dataPath);
 }
 
-const string& NemesisInfo::GetStagePathA() const
+const string NemesisInfo::GetStagePathA() const
 {
     return nemesis::transform_to<string>(stageDirectory);
 }
