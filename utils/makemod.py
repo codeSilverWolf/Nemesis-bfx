@@ -6,8 +6,19 @@ import shutil
 import subprocess
 import re
 
-# global config, instance of class MakeModConfig
-g_config = None
+def getMsysRootDir():
+    """
+    returns string containing windows compatible path to root directory '/' for msys. usually c:\\msys64\\
+    returns None if cygpath.exe program is not available
+    """
+    subproc = subprocess.run(["cygpath","-w","/"],capture_output=True, text=True)
+    if subproc:
+        lines = subproc.stdout.splitlines()
+        if len(lines) > 0:
+            path = Path(lines[0])
+            return path
+    return None
+
 
 class MakeModConfig:
     def __init__(self) -> None:
@@ -23,29 +34,24 @@ class MakeModConfig:
         else:
             self.running_in_msys = False
 
-def getMsysRootDir():
-    """
-    returns string containing windows compatible path to root directory '/' for msys. usually c:\\msys64\\
-    returns None if cygpath.exe program is not available
-    """
-    subproc = subprocess.run(["cygpath","-w","/"],capture_output=True, text=True)
-    if subproc:
-        lines = subproc.stdout.splitlines()
-        if len(lines) > 0:
-            path = Path(lines[0])
-            return path
-    return None
+# global config, instance of class MakeModConfig
+g_config = MakeModConfig()
+
 
 def msysPathToWindows(path):
     """
     translate msys unix path to corresponding windows path
+    by adding msys root prefix path in windows style before it
     """
     global g_config
 
     if not isinstance(path, Path):
         path = Path(path)
-    wp = g_config.msys_root_dir_win / (path.relative_to("/"))
-    return wp
+    
+    if g_config.msys_root_dir_win != None:
+        return g_config.msys_root_dir_win / (path.relative_to("/"))
+    else:
+        return None
     
 
 def getDllsFromExecutable(config: MakeModConfig, filepath):
@@ -145,21 +151,66 @@ def makeMod(config: MakeModConfig):
         config.mod_root_dir.mkdir(parents=True)
 
     # copy files
-    # shutil.copy2(config.nemesis_program_name, config.mod_root_dir)
+
+    # Copy main executable and dlls
     copyToMod(config, Path(config.nemesis_program_name))
 
     if dlls:
         for file_path in dlls["MSYS"]:
             #shutil.copy2(file_path, config.mod_root_dir)
             copyToMod(config, file_path)
+    
+    #copy qt windows platform dll
+    copyToMod(config, config.msys_prefix / Path("share/qt5/plugins/platforms/qwindows.dll"), Path("platforms"))
 
+    # TODO: copy qt imageformats from "share/qt5/plugins/imageformats" in msys
 
+    # zip python library
+    mod_python_libs_dir = config.mod_root_dir / Path("python_libs")
+    if not mod_python_libs_dir.exists():
+        mod_python_libs_dir.mkdir(parents=True)
+    elif not mod_python_libs_dir.is_dir():
+        print("ERROR: path for python libs exists and is not directory!!! aborting ")
+        return False
+
+    system_python_libs_dir = config.msys_prefix / Path("lib/python3.9") # TODO: get current python version from msys to replace hardcoded
+    python_libs_zip_output = mod_python_libs_dir/ Path("python39")  # zip file extension will be addes automaticly. TODO: get current python version from msys to replace hardcoded, update c++ code too
+    print("Making python libs zip file")
+    print("from directory:", str(system_python_libs_dir))
+
+    #check if python zip need updating. Condition: msys_prefix/bin/libpython3.9.dll newer than existing archive
+    dst_file = mod_python_libs_dir/ Path("python39.zip")
+    pydll_path = config.msys_prefix / Path("bin/libpython3.9.dll")
+    create_python_archive = True
+    if dst_file.exists() :
+                src_stat = pydll_path.stat()
+                dst_file_stat = dst_file.stat()
+                if src_stat.st_mtime > dst_file_stat.st_mtime :
+                    dst_file.unlink()
+                else:
+                    create_python_archive = False
+
+    if create_python_archive:
+        print("zipping python libs...")
+        shutil.make_archive(str(python_libs_zip_output), 'zip', str(system_python_libs_dir))
+        
+        # copy "lib-dynload" directory from python lib without zipping
+        # without these files embedded python can not open zip archive with library files
+        system_dynlib_path = system_python_libs_dir / Path("lib-dynload")
+        with os.scandir(system_dynlib_path) as dir_it:
+            for entry in dir_it:
+                if entry.is_file():
+                    copyToMod(config, system_dynlib_path / entry.name, Path(Path("python_libs/lib-dynload")))
+    else:
+        print("Python libs archive", str(dst_file), "is up to date. Skipping copying lib-dynload directory too!")
+
+    
     
         
 
 def main():
     global g_config
-    g_config = MakeModConfig()
+    
 
 
     if g_config.running_in_msys :
