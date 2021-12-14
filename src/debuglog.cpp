@@ -3,6 +3,10 @@
 
 #include "utilities/algorithm.h"
 #include "utilities/atomiclock.h"
+#include <algorithm>
+#include <iostream>
+
+bool gcfg_debug_output_to_stdio = false;
 
 using namespace std;
 
@@ -33,7 +37,7 @@ std::wstring currentTimeW()
 
 void DebugOutput()
 {
-    filename.clear();
+    //filename.clear();
 }
 
 void DebugLogging(string line, bool noEndLine)
@@ -52,6 +56,8 @@ void DebugLogging(string line, bool noEndLine)
     ofstream relog(filename, ios_base::app);
     relog << "[" + currentTime() + "] " + line + "\n";
     relog.close();
+
+    if(gcfg_debug_output_to_stdio) std::cout << "DEBUG:[" + currentTime() + "] " + line << std::endl;
 }
 
 void DebugLogging(wstring line, bool noEndLine)
@@ -70,16 +76,18 @@ void DebugLogging(wstring line, bool noEndLine)
     wofstream relog(filename, ios_base::app);
     relog << L"[" + currentTimeW() + L"] " + line + L"\n";
     relog.close();
+
+    if(gcfg_debug_output_to_stdio) std::wcout << L"DEBUG:[" + currentTimeW() + L"] " + line << std::endl;
 }
 
-void UpdateReset()
+void UpdateLogReset()
 {
     filename = "UpdateLog.txt";
     ofstream log(filename);
     log.close();
 }
 
-void PatchReset()
+void PatchLogReset()
 {
     filename = "PatchLog.txt";
     ofstream log(filename);

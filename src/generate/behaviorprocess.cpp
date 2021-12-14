@@ -1153,7 +1153,7 @@ void BehaviorStart::milestoneStart()
 {
     m_RunningThread = 1;
     failedBehaviors.clear();
-    PatchReset();
+    PatchLogReset();
     start_time = std::chrono::high_resolution_clock::now();
 
     DebugLogging("Nemesis Behavior Version: v" + GetNemesisVersion());

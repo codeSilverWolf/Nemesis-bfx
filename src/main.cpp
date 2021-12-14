@@ -7,7 +7,6 @@
 #include <QtGui/QIcon>
 #include <QtWidgets/QApplication>
 
-#include "Global.h"
 
 #include "ui/CmdLaunch.h"
 #include "ui/ErrorMsgBox.h"
@@ -31,6 +30,8 @@ int main(int argc, char* argv[])
         freopen("CONOUT$", "w", stdout);
         freopen("CONOUT$", "w", stderr);
         std::cout << "Reattached to Console" << std::endl;
+        // console is active - we can output dbg info to stdio
+        gcfg_debug_output_to_stdio = true;
     }
     #endif
 

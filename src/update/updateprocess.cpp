@@ -2252,7 +2252,7 @@ void UpdateFilesStart::newAnimProcess(string sourcefolder)
 void UpdateFilesStart::milestoneStart(string directory)
 {
     m_RunningThread = 1;
-    UpdateReset();
+    UpdateLogReset();
     start_time   = chrono::steady_clock::now();
     
     try
