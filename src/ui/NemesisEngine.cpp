@@ -494,6 +494,10 @@ void NemesisEngine::handleLaunch()
     BehaviorStart* worker = new BehaviorStart(nemesisInfo);
     worker->addBehaviorPick(this, behaviorPriority, chosenBehavior);
 
+    // moveToThread has to be called _before_ connecting signals.
+    // It won't move existing connections to new thread.
+    worker->moveToThread(thread);
+
     connect(worker, SIGNAL(totalAnim(int)), ui.animProgressBar, SLOT(newValue(int)));
     connect(thread, SIGNAL(started()), worker, SLOT(InitializeGeneration()));
     connect(worker, SIGNAL(progressUp()), this, SLOT(setProgressBarValue()));
@@ -512,7 +516,6 @@ void NemesisEngine::handleLaunch()
     connect(worker, SIGNAL(end()), worker, SLOT(deleteLater()));
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 
-    worker->moveToThread(thread);
     thread->start();
 }
 
@@ -534,6 +537,10 @@ void NemesisEngine::handleUpdate()
     QThread* thread          = new QThread;
     UpdateFilesStart* worker = new UpdateFilesStart(nemesisInfo);
 
+    // moveToThread has to be called _before_ connecting signals.
+    // It won't move existing connections to new thread.
+    worker->moveToThread(thread);
+
     connect(thread, SIGNAL(started()), worker, SLOT(UpdateFiles()));
     connect(worker, SIGNAL(progressUp()), this, SLOT(setProgressBarValue()));
     connect(worker, SIGNAL(progressMax(int)), this, SLOT(setProgressBarMax(int)));
@@ -550,7 +557,6 @@ void NemesisEngine::handleUpdate()
     connect(worker, SIGNAL(end()), worker, SLOT(deleteLater()));
     connect(thread, SIGNAL(finished()), thread, SLOT(deleteLater()));
 
-    worker->moveToThread(thread);
     thread->start();
 }
 
@@ -624,28 +630,14 @@ void NemesisEngine::setProgressBarValue()
 {
     if (error || terminated) return;
 
-    Lockless_s plock(lock);
+    // no need for locking, as we're using signals so this calls should be queued by event loop
+
     int old = progressPercentage * 100 / progressMax;
     ++progressPercentage;
     int result = progressPercentage * 100 / progressMax;
-
     if (result > old)
     {
-        if (result - old < 2)
-        {
-            ui.progressBar->setValue(old + 1);
-            std::this_thread::sleep_for(std::chrono::milliseconds(75));
-        }
-        else
-        {
-            for (int i = old + 1; i <= result; ++i)
-            {
-                if (error) break;
-
-                ui.progressBar->setValue(i);
-                std::this_thread::sleep_for(std::chrono::milliseconds(75));
-            }
-        }
+        ui.progressBar->setValue(result);
     }
 }
 

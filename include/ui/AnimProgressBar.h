@@ -26,19 +26,14 @@ private:
     QString val             = "170";
     const QString sat       = "255";
 
-    std::mutex pbmtx;
-    std::condition_variable pbcv;
-
-    std::atomic<int> trueValue = 0;
-
-    std::atomic_flag setFlag{};
+    // change trueValueatomic<int> to normal int, no need for locking in gui thread
+    int trueValue = 0;
 
 public:
     QString font = "";
     AnimProgressBar(QWidget* parent = nullptr);
 
 private:
-    void valueUpdate();
     void commitValue(int value);
 
 public slots:

@@ -19,65 +19,10 @@ AnimProgressBar::AnimProgressBar(QWidget* parent)
 {
     QTimer* mTimer = new QTimer(this);
     connect(mTimer, &QTimer::timeout, this, &AnimProgressBar::ForeverLoop);
-    mTimer->start(50);
-    
-    std::thread t(std::bind(&AnimProgressBar::valueUpdate, this));
-    t.detach();
-}
+    mTimer->start(100);
 
-void AnimProgressBar::valueUpdate() 
-{
-    try
-    {
-        int oldvalue = trueValue;
-        int base;
-        double root;
-        const int max = 110;
-        int counter;
-
-        //std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        //newValue(12574);
-
-        auto resetRaise = [&] {
-            oldvalue = trueValue;
-            base     = value();
-            counter  = max;
-            root     = std::log(max) / std::log(oldvalue - base);
-        };
-
-        while (true)
-        {
-            {
-                std::unique_lock ulock(pbmtx);
-                pbcv.wait(ulock, [&] { return trueValue != oldvalue; });
-            }
-
-            resetRaise();
-
-            while (counter > 0)
-            {
-                int v = oldvalue - static_cast<int>(std::pow(--counter, 1 / root));
-
-                if (v >= 0) commitValue(v);
-
-                std::this_thread::sleep_for(std::chrono::milliseconds(20));
-
-                if (oldvalue != trueValue)
-                {
-                    resetRaise();
-                }
-            }
-        }
-    }
-    catch (const std::exception& ex)
-    {
-    }
-    catch (...)
-    {
-    }
-
-    std::thread t(std::bind(&AnimProgressBar::valueUpdate, this));
-    t.detach();
+    // removed all this additional threads respawning on exception and moved commitValue() to ForeverLoop
+    // Gui functions can be called only from main thread!
 }
 
 void AnimProgressBar::ForeverLoop()
@@ -249,12 +194,15 @@ void AnimProgressBar::ForeverLoop()
 
     try
     {
-        Lockless n(setFlag);
         setStyleSheet(style.arg(color));
     }
     catch (...)
     {
     }
+
+    // call commitValue from here instead of another thread that was running valueUpdate(),
+    // which caused recursive repaints and program abort
+    commitValue(trueValue);
 
     aRunner += speed;
 
@@ -263,21 +211,19 @@ void AnimProgressBar::ForeverLoop()
 
 void AnimProgressBar::newValue(int value)
 {
-    std::unique_lock ulock(pbmtx);
+    // this is slot so no need for locks just emit signals from another thread.
     trueValue = value;
-    trueValue > 0 ? pbcv.notify_one() : commitValue(trueValue);
 }
 
 void AnimProgressBar::commitValue(int value)
 {
-    Lockless n(setFlag);
     int max_anim = maximum();
 
     if (0 < value && value <= max_anim)
     {
         double decivalue = value;
         double power     = decivalue / max_anim;
-        double mult      = max_anim / std::min(max_anim, value);
+        double mult      = (double)max_anim / std::min(max_anim, value);
         overtime         = c_overtime * mult;
         speed            = c_speed * mult;
         gsize            = c_gsize * mult;
