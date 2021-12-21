@@ -934,7 +934,9 @@ void BehaviorStart::GenerateBehavior(std::thread*& checkThread)
         }
     }
 
+#if defined(MULTITHREADED_UPDATE_2)
     nemesis::ThreadPool tp;
+#endif
     vector<BehaviorSub*> behaviorSubList;
 
     try
@@ -1005,17 +1007,29 @@ void BehaviorStart::GenerateBehavior(std::thread*& checkThread)
 
                     if (lowerFileName == L"animationdatasinglefile.txt")
                     {
+                        #if defined(MULTITHREADED_UPDATE_2)
                         tp.enqueue(&BehaviorSub::AnimDataCompilation, worker); // 9 progress ups
+                        #else
+                            worker->AnimDataCompilation(); // 9 progress ups
+                        #endif
                     }
                     else if (lowerFileName == L"animationsetdatasinglefile.txt")
                     {
+                        #if defined(MULTITHREADED_UPDATE_2)
                         tp.enqueue(&BehaviorSub::ASDCompilation, worker);
+                        #else
+                            worker->ASDCompilation();
+                        #endif
                     }
                     else
                     {
                         if (temppath.find(L"characters") == 0) worker->isCharacter = true;
 
+                        #if defined(MULTITHREADED_UPDATE_2)
                         tp.enqueue(&BehaviorSub::BehaviorCompilation, worker);
+                        #else
+                            worker->BehaviorCompilation();
+                        #endif
                     }
 
                     ++repeatcount;
@@ -1097,18 +1111,29 @@ void BehaviorStart::GenerateBehavior(std::thread*& checkThread)
 
                             if (lowerFileName == L"animationdatasinglefile.txt")
                             {
-                                tp.enqueue(&BehaviorSub::AnimDataCompilation,
-                                           worker); // 9 progress ups
+                                #if defined(MULTITHREADED_UPDATE_2)
+                                    tp.enqueue(&BehaviorSub::AnimDataCompilation, worker); // 9 progress ups
+                                #else
+                                    worker->AnimDataCompilation();
+                                #endif
                             }
                             else if (lowerFileName == L"animationsetdatasinglefile.txt")
                             {
-                                tp.enqueue(&BehaviorSub::ASDCompilation, worker);
+                                #if defined(MULTITHREADED_UPDATE_2)
+                                    tp.enqueue(&BehaviorSub::ASDCompilation, worker);
+                                #else
+                                    worker->ASDCompilation();
+                                #endif
                             }
                             else
                             {
                                 if (temppath.find(L"characters") == 0) worker->isCharacter = true;
 
-                                tp.enqueue(&BehaviorSub::BehaviorCompilation, worker);
+                                #if defined(MULTITHREADED_UPDATE_2)
+                                    tp.enqueue(&BehaviorSub::BehaviorCompilation, worker);
+                                #else
+                                    worker->BehaviorCompilation();
+                                #endif
                             }
 
                             ++repeatcount;
@@ -1120,8 +1145,11 @@ void BehaviorStart::GenerateBehavior(std::thread*& checkThread)
     }
     catch (exception& ex)
     {
+        #if defined(MULTITHREADED_UPDATE_2)
         tp.join_all();
+        #endif
         
+        // TODO: check what code below does? simply emptying vector?
         for (auto& each : behaviorSubList)
         {
             delete each;
@@ -1130,13 +1158,18 @@ void BehaviorStart::GenerateBehavior(std::thread*& checkThread)
         throw ex;
     }
 
+    // TODO: should we disable this too without defined(MULTITHREADED_UPDATE_2)??
     {
         lock_guard<mutex> lg(cv2_m);
         --behaviorRun;
     }
 
+    // TODO: check if this notify needs to be disabled too when !defined(MULTITHREADED_UPDATE_2)
+    #if defined(MULTITHREADED_UPDATE_2)
     cv2.notify_one();
+
     tp.join_all();
+    #endif
 
     for (auto& each : behaviorSubList)
     {
@@ -1249,7 +1282,9 @@ void BehaviorStart::unregisterProcess(bool skip)
     {
         lock_guard<mutex> lock(processlock);
         processdone = true;
+        #if defined(MULTITHREADED_UPDATE_2)
         cv.notify_one();
+        #endif
     }
     else
     {

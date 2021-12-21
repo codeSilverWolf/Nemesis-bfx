@@ -567,6 +567,7 @@ void BehaviorSub::CompilingAnimData()
                      + L" (Check point 2, AnimData general processing complete)");
         process->newMilestone();
 
+        #if defined(MULTITHREADED_UPDATE_2)
         {
             unique_lock<mutex> ulock(cv2_m);
 
@@ -575,6 +576,7 @@ void BehaviorSub::CompilingAnimData()
                 cv2.wait(ulock, [] { return error || behaviorRun == 0; });
             }
         }
+        #endif
 
         if (error) return;
 

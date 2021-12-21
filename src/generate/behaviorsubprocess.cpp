@@ -85,7 +85,9 @@ struct SubEnd
             --behaviorRun;
         }
 
+        #if defined(MULTITHREADED_UPDATE_2)
         cv2.notify_one();
+        #endif
         process->EndAttempt();
     }
 };
@@ -2002,7 +2004,11 @@ void BehaviorSub::CompilingBehavior()
                         shared_ptr<NewAnimation> dummyAnimation;
                         //int IDMultiplier = newAnimCopy[0]->getNextID(lowerBehaviorFile);
                         NewAnimLock animLock;
+
+                        #if defined(MULTITHREADED_UPDATE_2)
                         nemesis::ThreadPool tp;
+                        #endif
+
                         auto start_time = chrono::steady_clock::now();
 
                         // individual animation
@@ -2080,8 +2086,12 @@ void BehaviorSub::CompilingBehavior()
                                         if (error) throw nemesis::exception();
 
                                         //lastID += IDMultiplier;
-                                        tp.enqueue(animThreadStart, args);
-                                        //animThreadStart(args);
+
+                                        #if defined(MULTITHREADED_UPDATE_2)
+                                            tp.enqueue(animThreadStart, args);
+                                        #else
+                                        animThreadStart(args);
+                                        #endif
                                     }
                                 }
                                 catch (nemesis::exception&)
@@ -2167,8 +2177,12 @@ void BehaviorSub::CompilingBehavior()
                                         if (error) throw nemesis::exception();
 
                                         //lastID += IDMultiplier;
+
+                                        #if defined(MULTITHREADED_UPDATE_2)
                                         tp.enqueue(animThreadStart, args);
-                                        //animThreadStart(args);
+                                        #else
+                                        animThreadStart(args);
+                                        #endif
                                     }
                                 }
                                 catch (nemesis::exception&)
@@ -2178,7 +2192,9 @@ void BehaviorSub::CompilingBehavior()
                             }
                         }
 
+                        #if defined(MULTITHREADED_UPDATE_2)
                         tp.join_all();
+                        #endif
 
                         if (!ignoreGroup && !hasGroup)
                         {
@@ -2246,7 +2262,9 @@ void BehaviorSub::CompilingBehavior()
                             size_t n_newAnimCount = groupFunctionIDs->grouplist.size();
 
                             // Execute group template from memory
+                            #if defined(MULTITHREADED_UPDATE_2)
                             nemesis::ThreadPool tp2;
+                            #endif
 
                             for (unsigned int k = 0; k < n_newAnimCount; ++k)
                             {
@@ -2284,7 +2302,12 @@ void BehaviorSub::CompilingBehavior()
                                     if (error) throw nemesis::exception();
 
                                     //lastID += IDMultiplier;
+                                    
+                                    #if defined(MULTITHREADED_UPDATE_2)
                                     tp2.enqueue(groupThreadStart, args);
+                                    #else
+                                    groupThreadStart(args);
+                                    #endif
                                 }
                                 catch (nemesis::exception&)
                                 {
@@ -2292,7 +2315,9 @@ void BehaviorSub::CompilingBehavior()
                                 }
                             }
 
+                            #if defined(MULTITHREADED_UPDATE_2)
                             tp2.join_all();
+                            #endif
                         }
 
                         // master animation

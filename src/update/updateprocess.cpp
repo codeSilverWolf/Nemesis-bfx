@@ -2366,7 +2366,13 @@ void UpdateFilesStart::unregisterProcess()
     {
         scoped_lock<mutex> lock(processlock);
         processdone = true;
+
+        // TODO: is this correct to disable this notification when !defined(MULTITHREADED_UPDATE) ??
+        // looks like it HAS sonething to do with behavior(sub)process.cpp where i disabled ThreadPool
+        // lets try and see...
+        #if defined(MULTITHREADED_UPDATE_2)
         cv.notify_one();
+        #endif
     }
     else
     {
