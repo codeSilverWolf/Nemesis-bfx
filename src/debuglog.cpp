@@ -4,7 +4,9 @@
 #include "utilities/algorithm.h"
 #include "utilities/atomiclock.h"
 #include <algorithm>
+#include <exception>
 #include <iostream>
+#include <stdexcept>
 
 bool gcfg_debug_output_to_stdio = false;
 
@@ -52,17 +54,29 @@ void DebugLogging(string line, bool noEndLine)
         }
     }
 
-    Lockless_s lock(atomlock);
-    ofstream relog(filename, ios_base::app);
-    relog << "[" + currentTime() + "] " + line + "\n";
-    relog.close();
+    try
+    {
+        Lockless_s lock(atomlock);
 
-    if(gcfg_debug_output_to_stdio) std::cout << "DEBUG:[" + currentTime() + "] " + line << std::endl;
+        if(gcfg_debug_output_to_stdio)
+            std::cout << "DEBUG:[" + currentTime() + "] " + line << std::endl;
+
+        ofstream relog(filename, ios_base::app);
+        relog << "[" + currentTime() + "] " + line + "\n";
+        relog.close();
+    }
+    catch (std::exception &e)
+    {
+        if(gcfg_debug_output_to_stdio)
+            std::cout << "DEBUG: exception generated in DebugLogging!!! log files may be incomplete. Exception: " << e.what() << std::endl;
+        throw(std::runtime_error(e.what()));
+    }
+
 }
 
 void DebugLogging(wstring line, bool noEndLine)
 {
-    int64_t size = count(line.begin(), line.end(), '\n');
+    int64_t size = count(line.begin(), line.end(), L'\n');
 
     if (noEndLine)
     {
@@ -72,12 +86,24 @@ void DebugLogging(wstring line, bool noEndLine)
         }
     }
 
-    Lockless_s lock(atomlock);
-    wofstream relog(filename, ios_base::app);
-    relog << L"[" + currentTimeW() + L"] " + line + L"\n";
-    relog.close();
+    try
+    {
+        Lockless_s lock(atomlock);
 
-    if(gcfg_debug_output_to_stdio) std::wcout << L"DEBUG:[" + currentTimeW() + L"] " + line << std::endl;
+        if(gcfg_debug_output_to_stdio)
+            std::wcout << L"DEBUG:[" + currentTimeW() + L"] " + line << std::endl;
+
+        wofstream relog(filename, ios_base::app);
+        relog << L"[" + currentTimeW() + L"] " + line + L"\n";
+        relog.close();
+    }
+    catch (std::exception &e)
+    {
+        if(gcfg_debug_output_to_stdio)
+            std::cout << "DEBUG: exception generated in DebugLogging!!! log files may be incomplete. Exception: " << e.what() << std::endl;
+        throw(std::runtime_error(e.what()));
+    }
+
 }
 
 void UpdateLogReset()
