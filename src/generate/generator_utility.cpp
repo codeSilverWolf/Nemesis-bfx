@@ -1018,7 +1018,7 @@ void checkFolder(sf::path filepath)
 
         if (std::filesystem::is_directory(file))
         {
-            checkFolder(file.string());
+            checkFolder(file);
         }
         else if (nemesis::iequals(file.extension().wstring(), L".hkx"))
         {
