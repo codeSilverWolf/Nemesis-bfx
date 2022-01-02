@@ -1,3 +1,4 @@
+#include <locale>
 #include "Global.h"
 
 #include <algorithm>
@@ -20,6 +21,10 @@ extern std::wstring stagePath;
 
 int main(int argc, char* argv[])
 {
+    // set locale for libstdc++ to ".UTF-8" as first thing. This is needed to support
+    // non ASCII characters in file paths and <iostream> functions!.
+    char *lc_ctype = std::setlocale(LC_CTYPE, ".UTF-8");
+
     bool generate = false;
     bool update   = false;
     VecStr modlist;
@@ -29,9 +34,17 @@ int main(int argc, char* argv[])
     if (AttachConsole(ATTACH_PARENT_PROCESS)) {
         freopen("CONOUT$", "w", stdout);
         freopen("CONOUT$", "w", stderr);
-        std::cout << "Reattached to Console" << std::endl;
+        
         // console is active - we can output dbg info to stdio
         gcfg_debug_output_to_stdio = true;
+        std::cout << "Reattached to Console\n";
+
+        // TODO: display huge warning in main window when unicode page was not set.
+        // After all when not running from console, warning will not be issued.
+        if(lc_ctype != nullptr)
+            std::cout << "LC_CTYPE set to: \"" << lc_ctype << "\"" << std::endl;
+        else
+            std::cout << "ERROR setting LC_CTYPE set to \".UTF-8\" !!!" << std::endl;
     }
     #endif
 
