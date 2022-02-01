@@ -5,7 +5,7 @@ import subprocess
 import re
 import argparse
 
-def copyDirTree(src_path: Path, dst_path: Path, copy_masks = [('INCLUDE', r'*')], create_dirs = True, recurse = True) -> bool:
+def copyDirTree(src_path: Path, dst_path: Path, copy_masks = [('INCLUDE', r'*')], create_dirs = True, recurse = True, ask_confirmation = False) -> bool:
     """
     copy directory tree starting from src_path to directory pointed by dst_path
     files to copy are selected by entries in copy_masks list.
@@ -18,6 +18,19 @@ def copyDirTree(src_path: Path, dst_path: Path, copy_masks = [('INCLUDE', r'*')]
         src_path = Path(src_path)
     if type(dst_path) == str:
         dst_path = Path(dst_path)
+
+    # ask for confirmation
+    if ask_confirmation:
+        print("do you want to copy files from:", src_path, "to:", dst_path, " ?")
+        print("with mask:", copy_masks)
+        while response := input("(Y/n)?> ").lower():
+            if response == "n":
+                return False
+            elif response == "y":
+                break
+            else:
+                print("Invalid input! Expected 'Y(y)' or 'N(n)' only")
+        
 
     if not src_path.exists():
         print("ERROR: cannot copy - file", str(src_path), "does not exists!")
@@ -69,12 +82,18 @@ def copyDirTree(src_path: Path, dst_path: Path, copy_masks = [('INCLUDE', r'*')]
 if __name__ == "__main__":
 
     arg_parser = argparse.ArgumentParser("Utility for making Nemesis test environments, and testing results")
-    arg_parser.add_argument("-s", "--src", help="full path to skyrim directory - where SkyrimSE.exe exists")
-    arg_parser.add_argument("-d", "--dst", help="full path to directory where test directory hierarchy will be created")
+    arg_parser.add_argument("src", help="full path to skyrim directory - where SkyrimSE.exe exists")
+    arg_parser.add_argument("dst", help="full path to directory where test directory hierarchy will be created")
+    arg_parser.add_argument("-i", "--interactive", action="store_true", help="ask for confirmations before copying file groups")
     args = arg_parser.parse_args()
 
-    print("-s ", args.src)
-    print("-d ", args.dst)
+    print("Skyrim directory:", args.src)
+    print("Test environment directory", args.dst)
+
+    ask_confirmation = False
+    if args.interactive:
+        print("Interactive mode enabled.")
+        ask_confirmation = True
 
     if args.src and args.dst:
         # TODO: check if src dir is skyrim directory
@@ -89,14 +108,13 @@ if __name__ == "__main__":
         copy_masks = [("INCLUDE", "*animation*file.txt")]
         dir_to_copy = Path("Data/Meshes")
 
-        # copyDirTree(Path(args.src)/dir_to_copy, test_dir_path/dir_to_copy, copy_masks=copy_masks, recurse=False) # do not recurse!
-
+        copyDirTree(Path(args.src)/dir_to_copy, test_dir_path/dir_to_copy, copy_masks=copy_masks, recurse=False, ask_confirmation=ask_confirmation) # do not recurse!
 
         # copy all  *.txt, *.xml and *.hkx files from "Data/Meshes/actors" directory
         copy_masks = [("INCLUDE", "*.txt"), ("INCLUDE", "*.xml"), ("INCLUDE", "*.hkx")]
         dir_to_copy = Path("Data/Meshes/actors")
 
-        # copyDirTree(Path(args.src)/dir_to_copy, test_dir_path/dir_to_copy, copy_masks=copy_masks)
+        copyDirTree(Path(args.src)/dir_to_copy, test_dir_path/dir_to_copy, copy_masks=copy_masks, ask_confirmation=ask_confirmation)
 
         # TODO: check if nemesis engine exists in skyrim game directory
         # copy all files from "Data/Nemesis_Engine" directory to test environment ROOT path!!! not to Data
@@ -109,4 +127,6 @@ if __name__ == "__main__":
                         ("INCLUDE", "*")]
         dir_to_copy = Path("Data/Nemesis_Engine")
 
-        copyDirTree(Path(args.src)/dir_to_copy, test_dir_path, copy_masks=copy_masks)
+        copyDirTree(Path(args.src)/dir_to_copy, test_dir_path, copy_masks=copy_masks, ask_confirmation=ask_confirmation)
+
+        print("Done creating test environment.")
