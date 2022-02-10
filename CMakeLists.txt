@@ -143,7 +143,8 @@ source_group("Header Files\\update\\animdata" FILES ${Header_Files__update})
 set(Header_Files__utilities
     "include/utilities/algorithm.h"
     "include/utilities/alphanum.hpp"
-    "include/utilities/animationsconvert.h"
+# file below is not needed for main executable 
+#    "include/utilities/animationsconvert.h"
     "include/utilities/atomiclock.h"
     "include/utilities/bsasupport.h"
     "include/utilities/compute.h"
