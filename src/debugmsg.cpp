@@ -26,15 +26,17 @@ void writeUTF8File(string filename, VecStr storeline);
 
 void NewDebugMessage(DebugMsg NewLog)
 {
-    if (!EnglishLog) EnglishLog = new DebugMsg("english");
+    if (!EnglishLog) EnglishLog = new DebugMsg(L"english");
 
     DMLog = NewLog;
 }
 
-DebugMsg::DebugMsg(string language)
-{
-    setup(nemesis::transform_to<wstring>(language));
-}
+// disable std::string overload, as it fails on non utf-8 capable namesis::transform_to
+// and we really need unicode to avoid throwing exceptions with asian language translations
+// DebugMsg::DebugMsg(string language)
+// {
+//     setup(nemesis::transform_to<wstring>(language));
+// }
 
 DebugMsg::DebugMsg(wstring language)
 {

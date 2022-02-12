@@ -344,7 +344,7 @@ void NemesisEngine::GetSettings()
 
         if (curindex < 0)
         {
-            DMsg = new DebugMsg("english");
+            DMsg = new DebugMsg(L"english");
             interMsg("Previous language pack is not found. Default language is being used instead");
             ui.comboBox->setCurrentIndex(english);
         }
@@ -613,8 +613,8 @@ void NemesisEngine::languageChange(QString language)
     if (terminated) return;
 
     delete DMsg;
-    DMsg = new DebugMsg(language.toStdString());
-    createLanguageCache(language.toStdString());
+    DMsg = new DebugMsg(language.toStdWString()); // DebugMsg constructor language name argument must be UTF-16 encoded!
+    createLanguageCache(language.toStdWString());
     NewDebugMessage(*DMsg);
     reset();
     emit ui.modView->model()->headerDataChanged(Qt::Horizontal, 0, ui.modView->model()->columnCount());

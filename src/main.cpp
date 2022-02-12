@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
             }
             else
             {
-                NewDebugMessage(*new DebugMsg("english"));
+                NewDebugMessage(*new DebugMsg(L"english"));
                 NemesisInfo* nemesisInfo = new NemesisInfo;
                 CmdGenerateInitialize(modlist, nemesisInfo);
                 delete nemesisInfo;
@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
             }
             else
             {
-                NewDebugMessage(*new DebugMsg("english"));
+                NewDebugMessage(*new DebugMsg(L"english"));
                 NemesisInfo* nemesisInfo = new NemesisInfo;
                 CmdUpdateInitialize(nemesisInfo);
                 delete nemesisInfo;

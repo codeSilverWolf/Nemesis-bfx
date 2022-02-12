@@ -9,7 +9,7 @@
 #include "utilities/alphanum.hpp"
 #include "utilities/writetextfile.h"
 
-void createLanguageCache(std::string language)
+void createLanguageCache(std::wstring language)
 {
     if (CreateFolder("cache"))
     {
@@ -75,79 +75,79 @@ void createModOrderCache(std::vector<std::string> behaviorList)
     }
 }
 
-bool getCache(std::string& language, std::unordered_map<std::string, bool>& chosenBehavior)
-{
-    if (!isFileExist("cache"))
-    {
-        CreateFolder("cache");
-        return false;
-    }
+// bool getCache(std::string& language, std::unordered_map<std::string, bool>& chosenBehavior)
+// {
+//     if (!isFileExist("cache"))
+//     {
+//         CreateFolder("cache");
+//         return false;
+//     }
 
-    std::string filename = "cache\\language setting";
-    VecStr storeline;
+//     std::string filename = "cache\\language setting";
+//     VecStr storeline;
 
-    auto errFunc = [](std::string& language)
-    {
-        QMessageBox* msg = new QMessageBox;
-        msg->setWindowTitle("WARNING");
-        msg->setText("Warning: Failed to read language cache file. Language is set to the default "
-                     "language (english)");
-        msg->setAttribute(Qt::WA_DeleteOnClose);
-        msg->setIcon(QMessageBox::Warning);
-        msg->show();
-        language = "english";
-        createLanguageCache(language);
-    };
+//     auto errFunc = [](std::string& language)
+//     {
+//         QMessageBox* msg = new QMessageBox;
+//         msg->setWindowTitle("WARNING");
+//         msg->setText("Warning: Failed to read language cache file. Language is set to the default "
+//                      "language (english)");
+//         msg->setAttribute(Qt::WA_DeleteOnClose);
+//         msg->setIcon(QMessageBox::Warning);
+//         msg->show();
+//         language = "english";
+//         createLanguageCache(language);
+//     };
 
-    if (!isFileExist(filename) || !GetFunctionLines(filename, storeline, false))
-    {
-        errFunc(language);
-    }
-    else
-    {
-        for (auto& line : storeline)
-        {
-            if (line.length() > 0) language = line;
-        }
+//     if (!isFileExist(filename) || !GetFunctionLines(filename, storeline, false))
+//     {
+//         errFunc(language);
+//     }
+//     else
+//     {
+//         for (auto& line : storeline)
+//         {
+//             if (line.length() > 0) language = line;
+//         }
 
-        if (language.length() == 0) errFunc(language);
-    }
+//         if (language.length() == 0) errFunc(language);
+//     }
 
-    filename      = "cache\\mod settings";
-    auto errFunc2 = []() 
-    {
-        QMessageBox* msg = new QMessageBox;
-        msg->setWindowTitle("WARNING");
-        msg->setText("Warning: Failed to read mod cache file. All mods will be reverted to unchecked state");
-        msg->setAttribute(Qt::WA_DeleteOnClose);
-        msg->setIcon(QMessageBox::Warning);
-        msg->show();
-        createModCache({""});
-    };
+//     filename      = "cache\\mod settings";
+//     auto errFunc2 = []() 
+//     {
+//         QMessageBox* msg = new QMessageBox;
+//         msg->setWindowTitle("WARNING");
+//         msg->setText("Warning: Failed to read mod cache file. All mods will be reverted to unchecked state");
+//         msg->setAttribute(Qt::WA_DeleteOnClose);
+//         msg->setIcon(QMessageBox::Warning);
+//         msg->show();
+//         createModCache({""});
+//     };
 
-    try
-    {
-        if (!isFileExist(filename) || !GetFunctionLines(filename, storeline, false))
-        {
-            errFunc2();
-            return false;
-        }
-    }
-    catch (const std::exception&)
-    {
-        errFunc2();
-        return false;
-    }
+//     try
+//     {
+//         if (!isFileExist(filename) || !GetFunctionLines(filename, storeline, false))
+//         {
+//             errFunc2();
+//             return false;
+//         }
+//     }
+//     catch (const std::exception&)
+//     {
+//         errFunc2();
+//         return false;
+//     }
 
-    for (auto& line : storeline)
-    {
-        if (line.length() > 0) chosenBehavior[line] = true;
-    }
+//     for (auto& line : storeline)
+//     {
+//         if (line.length() > 0) chosenBehavior[line] = true;
+//     }
 
-    if (chosenBehavior.size() > 0) return true;
+//     if (chosenBehavior.size() > 0) return true;
 
-    return false;
-}
+//     return false;
+// }
 
 bool getCache(std::wstring& language, std::unordered_map<std::string, bool>& chosenBehavior)
 {
@@ -170,7 +170,7 @@ bool getCache(std::wstring& language, std::unordered_map<std::string, bool>& cho
         msg->setIcon(QMessageBox::Warning);
         msg->show();
         language = L"english";
-        createLanguageCache(nemesis::transform_to<std::string>(language));
+        createLanguageCache(language);
     };
 
     if (!isFileExist(filename) || !GetFunctionLines(filename, storeline, false))

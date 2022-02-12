@@ -36,7 +36,7 @@ struct DebugMsg
 
     DebugMsg()
     {}
-    DebugMsg(std::string language);
+    //DebugMsg(std::string language);
     DebugMsg(std::wstring language);
 
 private:
