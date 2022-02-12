@@ -5,6 +5,8 @@ import os
 import shutil
 import subprocess
 import re
+import argparse
+import json
 
 def getMsysRootDir():
     """
@@ -23,8 +25,9 @@ def getMsysRootDir():
 class MakeModConfig:
     def __init__(self) -> None:
         self.nemesis_program_name = "NemesisUnlimitedBehaviorEngine.exe"        # compiled executable name
+        self.nemesis_program_name_in_mod = "Nemesis Unlimited Behavior Engine.exe"        # compiled executable name
         self.work_dir = Path.cwd()      # current working directory, should point to path to build dir containing compiled executable
-        self.mod_root_dir = self.work_dir / "Archnemesis/Data/Nemesis_Engine"
+        self.mod_root_dir = self.work_dir / "Nemesis-bfx/Data/Nemesis_Engine"
         self.msys_root_dir_win = Path("c:/msys64") # default , should be overwritten
         if "MSYSTEM" in os.environ :
             self.running_in_msys = True     # are we running inside msys2 shell?
@@ -33,6 +36,7 @@ class MakeModConfig:
             self.msys_root_dir_win = getMsysRootDir()   # get root path for current msys environment (windows compatible path)
         else:
             self.running_in_msys = False
+        self.include_licenses = False   # set to True if we should include licenses for used msys packages (dlls mainly)
 
 # global config, instance of class MakeModConfig
 g_config = MakeModConfig()
@@ -76,62 +80,186 @@ def getDllsFromExecutable(config: MakeModConfig, filepath):
                     #  dll from msys , we need this in same directory as executable
                     dlls["MSYS"].append(PurePosixPath(dll_full_path))
                 else:
-                    print("error: unable to match needed dll to category. dll=[",dll_full_path,']',sep='')
+                    print("error: unable to match dll to category. dll=[",dll_full_path,']',sep='')
 
         return dlls
     else:
         return None
 
-def copyToMod(config: MakeModConfig, src_path: Path, dst_path: Path = Path("."), create_dirs = True) -> bool:
-    """
-    copy file or directory to directory relative to mod root path, overwriting destination files when necessary
+def getPackageInfoFromPacman(package_name: str):
+    pkg_info = {}
+    # use 'pacman -Si' to find package informations
+    subproc = subprocess.run(["pacman","-Qi",package_name],capture_output=True, text=True)
+    if subproc:
+        #print("return code ",subproc.returncode)
+        if subproc.returncode == 130:
+            print("subprocess was interrupted!")
+            return None
+        lines = subproc.stdout.splitlines()
+        if len(lines) > 0:
+            for line in lines:
+                (field_name, tmp_sep, field_text) = line.partition(":")
+                field_name = field_name.strip()
+                field_text = field_text.strip()
 
+                pkg_info[field_name] = field_text
+                # print(line)
+
+    return pkg_info
+         
+
+def getFileOwningPackageFromPacman(filename):
+    print("searching for file", filename, "in pacman database")
+
+    filename = str(filename) # change to str - serialize to json fails with Path type objects
+    owning_package = {}
+    # use pacman -F to find package owning current file
+    subproc = subprocess.run(["pacman","-F","--quiet",filename],capture_output=True, text=True)
+    if subproc:
+        #print("return code ",subproc.returncode)
+        if subproc.returncode == 130:
+            print("subprocess was interrupted!")
+            return None
+        lines = subproc.stdout.splitlines()
+        if len(lines) > 0:
+            owning_package_arr = lines[0].split("/")
+            if(len(owning_package_arr) == 2):
+                owning_package['NAME'] = owning_package_arr[1]
+                owning_package['SUBSYSTEM'] = owning_package_arr[0]
+                print("  found owning package ", owning_package_arr[1], "for subsystem", owning_package_arr[0])
+            else:
+                owning_package['NAME'] = owning_package_arr[0]
+                owning_package['SUBSYSTEM'] = ""
+                print("  warning: found package but it has only name",owning_package['NAME'])
+
+            # get package 'root' name - without subsystem and compiler prefix 
+            if owning_package['SUBSYSTEM'] == "ucrt64":
+                owning_package['SHORTNAME'] = owning_package['NAME'].removeprefix("mingw-w64-ucrt-x86_64-")
+        owning_package['FILES'] = [filename]
+    else:
+        # print("Can't find package owning file ",filename,"!!!")
+        owning_package = None
+    return owning_package
+
+def getMsysPackageInfoForFiles(filenames):
     """
+        This function uses pacman to get info about packages containing specified files.
+
+        filenames : array of PurePath or derived classes containing file names to search for
+    """
+    packages = {}
+    cache_available = False
+
+    cache_file = Path("makemod_pkg_cache.json")
+    with cache_file.open("r", encoding="utf-8") as cf:
+        packages = json.load(cf)
+        cache_available = True
+
+    for filename in filenames:
+        # try to get file from already cached packages
+        file_was_in_cache = False
+        if cache_available:
+            print("searching cache for", filename)
+            for pkg_name in packages:
+                if 'FILES' in packages[pkg_name] and str(filename) in packages[pkg_name]['FILES']:
+                    print("  file ", str(filename), "was found in cache in pkg", pkg_name)
+                    file_was_in_cache = True
+                    break
+
+        if file_was_in_cache: # pkg owning file is in cache already, continue loop with next file
+            continue
+
+        # pkg owning file not in cache. Search Pacman database
+        if owning_package := getFileOwningPackageFromPacman(filename):
+            pkg_name = owning_package['NAME']
+            if pkg_name not in packages:
+                packages[pkg_name] = owning_package
+                # get new package info
+                packages[pkg_name]['INFO'] = getPackageInfoFromPacman(pkg_name)
+            else:
+                # only add another file to already discovered package
+                packages[pkg_name]['FILES'].append(str(filename))   # convert filename (class Path) to str or json serializer will fail
+        else:
+            print("Can't find package owning file ",filename,"!!!")
+    
+    # dump used packages for caching
+    with cache_file.open("w", encoding="utf-8") as cf:
+        json.dump(packages, cf, sort_keys=True, indent=2)
+
+
+
+
+
+
+def copyToMod(config: MakeModConfig, src_path: Path, dst_path: Path = Path("."), create_dirs = True, dst_path_is_file=False) -> bool:
+    """
+    copy file to directory _relative_ to mod root path, overwriting destination files when necessary
+    
+    src_path: can be Path, or _absolute_ PurePosixPath - represents path inside current msys environment
+            (usefull for copying dlls etc. from MSYS2).
+    dst_path: relative path pointing to destination directory or
+              path to destination filename (when argument dst_path_is_file == True)
+    create_dirs == True: create missing destination directories
+    """
+    
     # convert unix path to windows
     if type(src_path) is PurePosixPath:
-        if src_path.root == '/':
+        if src_path.root == "/":
             src_path = config.msys_root_dir_win / src_path.relative_to('/')
     
-    if not src_path.exists():
-        print("ERROR: cannot copy - file", str(src_path), "does not exists!")
+    #convert dst path to Path from str if needed
+    if type(dst_path) is str:
+        dst_path = Path(dst_path)
+    
+    if not src_path.is_file():
+        print("ERROR: cannot copy - src path", str(src_path), "is not a file or does not exists!")
         return False
     if dst_path.root or dst_path.drive:
         print("ERROR: cannot copy - file ", str(src_path), " Destination path '", dst_path,"' has to be relative!")
     
     dst_path = config.mod_root_dir / dst_path
-    # dst_is_directory = False
-    # if dst_path.name == "*":
-    #     # treat dst path as directory
-    #     dst_path = dst_path.parent
-    #     dst_is_directory = True
+
+    # get destination directory from dst_path
+    if dst_path_is_file:
+        dst_dir = dst_path.parent # destination path represents file, so we need to get parent directory
+    else:
+        dst_dir = dst_path
     
-    if not dst_path.exists():
+    # create destination directory if needed and requested. Return error otherwise.
+    if not dst_dir.exists():
         if create_dirs:
-            dst_path.mkdir(parents=True)
-            print("making path:", str(dst_path))
+            dst_dir.mkdir(parents=True)
+            print("making path:", str(dst_dir))
         else:
-            print("ERROR: destinition directory ", str(dst_path), "does not exists!")
+            print("ERROR: destinition directory ", str(dst_dir), "does not exists!")
             return False
-    if dst_path.is_dir():
-        file_was_overwritten = False # was the file overw
-        skip_file = False       # if dst file is same/newer - skip it
-        # check if destination file exists and delete if older/different
+    
+    # dst_file is full file path to be copied to
+    if dst_path_is_file:
+        dst_file = dst_path
+    else: 
+        # dst_path is directory so add fsrc file name
         dst_file = dst_path / src_path.name
-        if dst_file.exists():
-            src_stat = src_path.stat()
-            dst_file_stat = dst_file.stat()
-            if src_stat.st_mtime > dst_file_stat.st_mtime or src_stat.st_size != dst_file_stat.st_size:
-                dst_file.unlink()
-                file_was_overwritten = True
-            else:
-                skip_file = True
-        
-        # finally we can copy
-        if skip_file:
-            print("SKIP ",str(src_path), "->", str(dst_file) )
+
+    file_was_overwritten = False # flag that signalizes if the destination file was older and overwritten
+    skip_file = False       # if dst file is same/newer - skip it
+
+    # check if destination file exists and delete if older/different
+    if dst_file.exists():
+        src_stat = src_path.stat()
+        dst_file_stat = dst_file.stat()
+        if src_stat.st_mtime > dst_file_stat.st_mtime or src_stat.st_size != dst_file_stat.st_size:
+            dst_file.unlink()
+            file_was_overwritten = True
         else:
-            rv = shutil.copy2(src_path, dst_path)
-            print("OVERWRITE" if file_was_overwritten else "COPY", str(src_path), "->", str(rv))
+            skip_file = True
+    
+    # finally we can copy
+    if skip_file:
+        print("SKIP ",str(src_path), "->", str(dst_file) )
+    else:
+        rv = shutil.copy2(src_path, dst_file)
+        print("OVERWRITE" if file_was_overwritten else "COPY", str(src_path), "->", str(rv))
 
     return True
     
@@ -150,17 +278,23 @@ def makeMod(config: MakeModConfig):
     if not config.mod_root_dir.exists():
         config.mod_root_dir.mkdir(parents=True)
 
+    # get licenses
+    if config.include_licenses and dlls:
+        getMsysPackageInfoForFiles(dlls['MSYS'])
+        return # for debugging this function. remove later !!!
+
     # copy files
 
-    # Copy main executable and dlls
-    copyToMod(config, Path(config.nemesis_program_name))
+    # Copy main executable changing name to same as in original Nemesis
+    copyToMod(config, Path(config.nemesis_program_name), Path(config.nemesis_program_name_in_mod), dst_path_is_file=True)
 
+    # Copy dlls loaded by main executable
     if dlls:
         for file_path in dlls["MSYS"]:
             #shutil.copy2(file_path, config.mod_root_dir)
             copyToMod(config, file_path)
     
-    #copy qt windows platform dll
+    # copy qt windows platform dll
     copyToMod(config, config.msys_prefix / Path("share/qt5/plugins/platforms/qwindows.dll"), Path("platforms"))
 
     # TODO: copy qt imageformats from "share/qt5/plugins/imageformats" in msys
@@ -211,6 +345,12 @@ def makeMod(config: MakeModConfig):
 def main():
     global g_config
     
+    arg_parser = argparse.ArgumentParser("Utility for making Nemesis-bfx mod package")
+    arg_parser.add_argument("-l", "--includelicenses", action="store_true", help="add licenses from included msys packages")
+    args = arg_parser.parse_args()
+
+    if args.includelicenses:
+        g_config.include_licenses = True
 
 
     if g_config.running_in_msys :
