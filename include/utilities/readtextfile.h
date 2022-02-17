@@ -46,24 +46,28 @@ struct FileReader
         return false;
     }
 
-    bool GetLines(std::string_view& line)
-    {
-        while (!file.atEnd())
-        {
-            QString qline        = file.readLine();
-            const char* templine = qline.toStdString().c_str();
-            line                 = std::string_view(templine);
+    // disable std::string_view& line version
+    // clangd issues warning that templine pointer is backed by object that will be soon destroyed.
+    // gcc is silent so maybe it extends life of object?
+    
+    // bool GetLines(std::string_view& line)
+    // {
+    //     while (!file.atEnd())
+    //     {
+    //         QString qline        = file.readLine();
+    //         const char* templine = qline.toStdString().c_str();
+    //         line                 = std::string_view(templine);
 
-            while (line.length() > 0 && (line.back() == '\n' || line.back() == '\r'))
-            {
-                line = std::string_view(templine, line.length() - 1);
-            }
+    //         while (line.length() > 0 && (line.back() == '\n' || line.back() == '\r'))
+    //         {
+    //             line = std::string_view(templine, line.length() - 1);
+    //         }
 
-            return true;
-        }
+    //         return true;
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
     bool GetLines(std::wstring& line)
     {
@@ -83,24 +87,24 @@ struct FileReader
         return false;
     }
 
-    bool GetLines(std::wstring_view& line)
-    {
-        while (!file.atEnd())
-        {
-            QString qline           = file.readLine();
-            const wchar_t* templine = qline.toStdWString().c_str();
-            line                    = std::wstring_view(templine);
+    // bool GetLines(std::wstring_view& line)
+    // {
+    //     while (!file.atEnd())
+    //     {
+    //         QString qline           = file.readLine();
+    //         const wchar_t* templine = qline.toStdWString().c_str();
+    //         line                    = std::wstring_view(templine);
 
-            while (line.length() > 0 && (line.back() == '\n' || line.back() == '\r'))
-            {
-                line = std::wstring_view(templine, line.length() - 1);
-            }
+    //         while (line.length() > 0 && (line.back() == '\n' || line.back() == '\r'))
+    //         {
+    //             line = std::wstring_view(templine, line.length() - 1);
+    //         }
 
-            return true;
-        }
+    //         return true;
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 };
 
 #endif
