@@ -572,8 +572,15 @@ void NemesisEngine::handleCheck()
 
     QMessageBox::StandardButton reply;
 
+    // Dummy log needs to be created here, because TextBoxMessage uses it in situation
+    // when language file do not contain message (broken, outdated etc.).
+    // And then we get error from interMsg that hides real cause of error.
+    DummyLog* DLog = new DummyLog;
+    connectProcess(DLog);
+    QObject::connect(DLog, SIGNAL(incomingMessage(QString)), this, SLOT(sendMessage(QString)));
+
     reply = QMessageBox::information(this,
-                                     QString::fromStdWString(TextBoxMessage(1019)),
+                                     QString::fromStdWString(L"INFORMATION"),  // TBT 1019 is message for different information, not title for 1018!
                                      QString::fromStdWString(TextBoxMessage(1018)),
                                      QMessageBox::Ok,
                                      QMessageBox::Abort);
@@ -581,16 +588,11 @@ void NemesisEngine::handleCheck()
     if (reply == QMessageBox::Ok)
     {
         ui.textBrowser->clear();
-
-        DummyLog* DLog = new DummyLog;
-        connectProcess(DLog);
-        QObject::connect(DLog, SIGNAL(incomingMessage(QString)), this, SLOT(sendMessage(QString)));
-
         warningCheck();
-
-        disconnectProcess();
-        delete DLog;
     }
+
+    disconnectProcess(DLog);
+    delete DLog;
 
     ui.buttonLaunch->setDisabled(false);
     ui.buttonUpdate->setDisabled(false);

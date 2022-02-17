@@ -14,5 +14,6 @@ void connectProcess(UpdateFilesStart* newProcess);
 void connectProcess(BehaviorStart* newProcess);
 void connectProcess(DummyLog* newProcess);
 void disconnectProcess();
+void disconnectProcess(DummyLog* newProcess);
 
 #endif

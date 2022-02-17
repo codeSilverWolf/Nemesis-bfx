@@ -34,8 +34,9 @@ void interMsg(std::string input)
         DebugLogging("Non-captured message: " + input);
         CEMsgBox* msgbox = new CEMsgBox;
         msgbox->setWindowTitle("CRITICAL ERROR");
-        msgbox->setText(
-            "Access process violation. Running process not found. Report to Nemesis' author immediately.");
+        msgbox->setText(QString("interMsg can not deliver message. Running process not found. Report to Nemesis' author immediately.\n"
+                                "Message: ")
+                        .append(QString::fromStdString(input)));
         msgbox->show();
         error = true;
     }
@@ -60,8 +61,9 @@ void interMsg(std::wstring input)
         DebugLogging(L"Non-captured message: " + input);
         CEMsgBox* msgbox = new CEMsgBox;
         msgbox->setWindowTitle("CRITICAL ERROR");
-        msgbox->setText(
-            "Access process violation. Running process not found. Report to Nemesis' author immediately.");
+        msgbox->setText(QString("interMsg can not deliver message. Running process not found. Report to Nemesis' author immediately.\n"
+                                "Message: ")
+                        .append(QString::fromStdWString(input)));
         msgbox->show();
         error = true;
     }
@@ -88,4 +90,15 @@ void disconnectProcess()
     process1 = nullptr;
     process2 = nullptr;
     process3 = nullptr;
+}
+
+void disconnectProcess(DummyLog* newProcess)
+{
+    if(process3 != nullptr)
+    {
+        if(process3 != newProcess)
+            DebugLogging("Warning: disconnectProcess for DummyLog that was not connected!");
+        process3 = nullptr;
+    }
+    else DebugLogging("Error: disconnectProcess is trying to disconnect DummyLog but 'process3' ptr is already null!");
 }
