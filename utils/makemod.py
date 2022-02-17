@@ -185,8 +185,50 @@ def getMsysPackageInfoForFiles(filenames):
     # dump used packages for caching
     with cache_file.open("w", encoding="utf-8") as cf:
         json.dump(packages, cf, sort_keys=True, indent=2)
+    
+    return packages
 
+def makeLicensesDir(config: MakeModConfig, packages):
+    mod_lic_dir = Path("Licenses")  # Directory for 3rd party license files in created mod
+    lic_file_name = config.mod_root_dir / mod_lic_dir / Path("Information about used 3rd party libraries.txt")
 
+    if not lic_file_name.parent.exists():
+       lic_file_name.parent.mkdir(parents=True)
+
+    lic_file = lic_file_name.open("w", encoding="utf-8")
+
+    lic_file.write("""
+This file lists information about open source libraries that Nemesis-bfx links dynamically to.
+         
+"""
+    )
+
+    msys_lic_dir = config.msys_root_dir_win / config.msys_prefix / "share/licenses"
+    print(f"Copying license directories from: {str(msys_lic_dir)}")
+
+    for pkg_name, pkg in packages.items():
+        info_lines = []
+        info_lines.append(f"msys2 package name: {pkg_name}\n")
+        info_lines.append(f"Description: {pkg['INFO']['Description']}\n")
+        info_lines.append(f"license(s): {pkg['INFO']['Licenses']}\n")
+        info_lines.append(f"homepage: {pkg['INFO']['URL']}\n")
+        used_files = [str(PurePath(uf).name) for uf in pkg['FILES']]
+        info_lines.append("Used libraries: " + ", ".join(used_files) + "\n")
+        info_lines.append("\n")
+        lic_file.writelines(info_lines)
+
+        # copy files from directories in msys containing package licenses to mod
+        print(f"for package: {pkg['SHORTNAME']}")
+        current_lic_dir = msys_lic_dir / pkg['SHORTNAME']
+        if current_lic_dir.is_dir():
+            for f in current_lic_dir.iterdir():
+                # f is full path
+                if f.is_file():
+                    copyToMod(config, f, mod_lic_dir / pkg['SHORTNAME'])
+        else:
+            print(f"INFO: for package {pkg_name} directory with licenses does not exist in msys!")
+    
+    lic_file.close()
 
 
 
@@ -280,8 +322,8 @@ def makeMod(config: MakeModConfig):
 
     # get licenses
     if config.include_licenses and dlls:
-        getMsysPackageInfoForFiles(dlls['MSYS'])
-        return # for debugging this function. remove later !!!
+        pkgs_for_libraries = getMsysPackageInfoForFiles(dlls['MSYS'])
+        makeLicensesDir(config, pkgs_for_libraries)
 
     # copy files
 
