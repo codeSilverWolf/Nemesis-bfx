@@ -350,14 +350,15 @@ if(MINGW)
         "-std=c++17"    # needed for clang language server, specifying in target_compile_features is not enough(broken?) for newest clang to properly pick standard
         "-Wa,-mbig-obj" # REQUIRED due to large number of used templates !!! 
         
-        # enable debug - TODO: disable in release
-        "-ggdb"     # enable debugging 
-        "-fno-lto"  # disable lto optimizations for faster linking time
+        # enable debug
+        $<$<CONFIG:Debug>:-ggdb>     # enable debugging and force debug format to gdb
+        $<$<CONFIG:Debug>:-fno-lto>  # disable lto optimizations for faster linking time
     )
+
     target_link_options(${PROJECT_NAME} PRIVATE
         # TODO: disable in release, options used to speed up looooooooong link times in msys2
         "--verbose"
-        "-fno-lto"
+        $<$<CONFIG:Debug>:-fno-lto>
     )
 endif()
 
