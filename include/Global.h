@@ -68,9 +68,9 @@ extern std::set<std::string> groupNameList; // list of animation group name; for
 
 // string utilities
 bool isOnlyNumber(std::string line);
-bool hasAlpha(std::string line);
+bool hasAlpha(const std::string& line);
 bool isOnlyNumber(std::wstring line);
-bool hasAlpha(std::wstring line);
+bool hasAlpha(const std::wstring& line);
 size_t wordFind(std::string line, std::string word, bool isLast = false); // case insensitive "string.find"
 size_t wordFind(std::wstring line, std::wstring word, bool isLast = false); // case insensitive "string.find"
 int sameWordCount(std::string line, std::string word);

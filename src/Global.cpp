@@ -6,6 +6,8 @@
 #include "utilities/readtextfile.h"
 #include "utilities/writetextfile.h"
 
+#include "unicode_utils.h"
+
 #pragma warning(disable:4503)
 
 using namespace std;
@@ -283,9 +285,10 @@ bool isOnlyNumber(string line)
 	return end != line.c_str() && *end == '\0' && val != HUGE_VAL;
 }
 
-bool hasAlpha(string line)
+bool hasAlpha(const string& line)
 {
-	return nemesis::to_lower_copy(line) != nemesis::to_upper_copy(line);
+	//return nemesis::to_lower_copy(line) != nemesis::to_upper_copy(line);
+	return uu::hasAlpha(line);
 }
 
 bool isOnlyNumber(wstring line)
@@ -295,9 +298,10 @@ bool isOnlyNumber(wstring line)
     return end != line.c_str() && *end == '\0' && val != HUGE_VAL;
 }
 
-bool hasAlpha(wstring line)
+bool hasAlpha(const wstring& line)
 {
-    return nemesis::to_lower_copy(line) != nemesis::to_upper_copy(line);
+    //return nemesis::to_lower_copy(line) != nemesis::to_upper_copy(line);
+	return uu::hasAlpha(line);
 }
 
 void addUsedAnim(string behaviorFile, string animPath)

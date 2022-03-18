@@ -44,43 +44,43 @@ namespace nemesis
     //     return temp;
     // }
 
-    string to_lower_copy(const string& data)
-    {
-        string::size_type str_len = data.length();
+    // string to_lower_copy(const string& data)
+    // {
+    //     string::size_type str_len = data.length();
 
-        if(str_len == 0) return {};
+    //     if(str_len == 0) return {};
         
-        string tmpstr = data;
-        for( string::size_type i = 0; i < str_len; i++)
-        {
-            tmpstr[i] = tolower(data[i]);
-        }
-        return tmpstr;
-    }
+    //     string tmpstr = data;
+    //     for( string::size_type i = 0; i < str_len; i++)
+    //     {
+    //         tmpstr[i] = tolower(data[i]);
+    //     }
+    //     return tmpstr;
+    // }
 
-    wstring to_lower_copy(const wstring& data)
-    {
-        wstring::size_type str_len = data.length();
+    // wstring to_lower_copy(const wstring& data)
+    // {
+    //     wstring::size_type str_len = data.length();
 
-        if(str_len == 0) return {};
+    //     if(str_len == 0) return {};
         
-        wstring tmpstr = data;
-        for( wstring::size_type i = 0; i < str_len; i++)
-        {
-            tmpstr[i] = towlower(data[i]);
-        }
-        return tmpstr;
-    }
+    //     wstring tmpstr = data;
+    //     for( wstring::size_type i = 0; i < str_len; i++)
+    //     {
+    //         tmpstr[i] = towlower(data[i]);
+    //     }
+    //     return tmpstr;
+    // }
 
-    void to_lower(string& data)
-    {
-        data = to_lower_copy(data);
-    }
+    // void to_lower(string& data)
+    // {
+    //     data = to_lower_copy(data);
+    // }
 
-    void to_lower(wstring& data)
-    {
-        data = to_lower_copy(data);
-    }
+    // void to_lower(wstring& data)
+    // {
+    //     data = to_lower_copy(data);
+    // }
 
     // const char* to_upper_copy(const char* data)
     // {
@@ -160,47 +160,48 @@ namespace nemesis
     //     return wcscmp(to_lower_copy(l).c_str(), to_lower_copy(r)) == 0;
     // }
 
-    bool iequals(const string& l, const string& r)
-    {
-        string::size_type l_length = l.length(), r_length = r.length();
 
-        if(l_length == r_length)
-        {
-            string::size_type i = 0;
-            while(i < l_length)
-            {
-                if (tolower(l[i]) != tolower(r[i]))
-                    return false;
-                i++;
-            }
-            return true; // both strings equal
-        }
-        else
-        {
-            return false;   // strings of different length can not be equal
-        }
-    }
+    // bool iequals(const string& l, const string& r)
+    // {
+    //     string::size_type l_length = l.length(), r_length = r.length();
 
-    bool iequals(const wstring& l, const wstring& r)
-    {
-        wstring::size_type l_length = l.length(), r_length = r.length();
+    //     if(l_length == r_length)
+    //     {
+    //         string::size_type i = 0;
+    //         while(i < l_length)
+    //         {
+    //             if (tolower(l[i]) != tolower(r[i]))
+    //                 return false;
+    //             i++;
+    //         }
+    //         return true; // both strings equal
+    //     }
+    //     else
+    //     {
+    //         return false;   // strings of different length can not be equal
+    //     }
+    // }
 
-        if(l_length == r_length)
-        {
-            wstring::size_type i = 0;
-            while(i < l_length)
-            {
-                if (tolower(l[i]) != tolower(r[i]))
-                    return false;
-                i++;
-            }
-            return true; // both strings equal
-        }
-        else
-        {
-            return false;   // strings of different length can not be equal
-        }
-    }
+    // bool iequals(const wstring& l, const wstring& r)
+    // {
+    //     wstring::size_type l_length = l.length(), r_length = r.length();
+
+    //     if(l_length == r_length)
+    //     {
+    //         wstring::size_type i = 0;
+    //         while(i < l_length)
+    //         {
+    //             if (tolower(l[i]) != tolower(r[i]))
+    //                 return false;
+    //             i++;
+    //         }
+    //         return true; // both strings equal
+    //     }
+    //     else
+    //     {
+    //         return false;   // strings of different length can not be equal
+    //     }
+    // }
 
     // bool iequals(const char* l, const string& r)
     // {
