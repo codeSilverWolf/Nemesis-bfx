@@ -41,6 +41,8 @@ include(CMake/Python.cmake)
 include(CMake/Boost.cmake)
 include(CMake/Qt.cmake)
 
+add_subdirectory("external/uu")
+
 # do not compile hkxcmd as we only provide code for Main executable
 #add_subdirectory(external/hkxcmd)
 
@@ -362,7 +364,7 @@ if(MINGW)
     )
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE BoostNemesis PythonNemesis Qt5Nemesis #hkxcmd #add_subdirectory(external/hkxcmd)
+target_link_libraries(${PROJECT_NAME} PRIVATE BoostNemesis PythonNemesis Qt5Nemesis unicode_utils #hkxcmd #add_subdirectory(external/hkxcmd)
 )
 
 set(CMAKE_VERBOSE_MAKEFILE TRUE)
