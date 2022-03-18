@@ -7,6 +7,7 @@
 #include <QtCore/QFile.h>
 #include <QtCore/QTextStream.h>
 
+#include "unicode_utils.h"
 #include "utilities/regex.h"
 #include "utilities/writetextfile.h"
 
@@ -17,21 +18,21 @@ wstring stagePath = L"";
 
 void NemesisInfo::iniFileUpdate()
 {
-    QFile file("nemesis.ini");
+    uu::TextFile file(L"nemesis.ini");
+    
 
-    if (file.open(QIODevice::Truncate | QIODevice::WriteOnly))
+    if (file.OpenForWriting())
     {
-        QTextStream stream(&file);
-        stream << QString::fromStdWString(L"SkyrimDataDirectory=" + dataPath + L"\r\n");
-        stream << QString::fromStdWString(L"MaxAnimation=" + to_wstring(maxAnim) + L"\r\n");
-        stream << QString::fromStdWString(L"first=" + wstring(first ? L"true" : L"false") + L"\r\n");
-        stream << QString::fromStdWString(L"width=" + to_wstring(width) + L"\r\n");
-        stream << QString::fromStdWString(L"height=" + to_wstring(height) + L"\r\n");
-        stream << QString::fromStdWString(L"modNameWidth=" + to_wstring(modNameWidth) + L"\r\n");
-        stream << QString::fromStdWString(L"authorWidth=" + to_wstring(authorWidth) + L"\r\n");
-        stream << QString::fromStdWString(L"priorityWidth=" + to_wstring(priorityWidth) + L"\r\n");
-        stream.flush();
-        file.close();
+        file.PutLine(L"SkyrimDataDirectory=" + dataPath);
+        file.PutLine("MaxAnimation=" + to_string(maxAnim));
+        file.PutLine("first=" + string(first ? "true" : "false"));
+        file.PutLine("width=" + to_string(width));
+        file.PutLine("height=" + to_string(height));
+        file.PutLine("modNameWidth=" + to_string(modNameWidth));
+        file.PutLine("authorWidth=" + to_string(authorWidth));
+        file.PutLine("priorityWidth=" + to_string(priorityWidth));
+        file.Flush();
+        file.Close();
     }
 }
 
@@ -67,8 +68,9 @@ void NemesisInfo::setup()
         try
         {
             VecWstr storeline;
-
-            if (GetFunctionLines(L"nemesis.ini", storeline))
+            uu::TextFile inifile(L"nemesis.ini");
+            
+            if (inifile.GetLines(storeline))
             {
                 for (auto& line : storeline)
                 {
@@ -170,6 +172,11 @@ void NemesisInfo::setup()
                         hasAuto.insert(input);
                     }
                 }
+            }
+            else // failed reading ini file
+            {
+                DebugLogging("ERROR: failed reading existing configuration from nemesis.ini file.");
+                dataPath.clear();
             }
         }
         catch (const exception&)
