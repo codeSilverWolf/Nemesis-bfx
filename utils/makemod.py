@@ -306,6 +306,102 @@ def copyToMod(config: MakeModConfig, src_path: Path, dst_path: Path = Path("."),
     return True
     
 
+def makePythonLibrary(config: MakeModConfig):
+    #exclude diretories from python library
+    python_lib_exclude = ["distutils", "ensurepip", "lib2to3", "pydoc_data", "test", "turtledemo"]
+
+    python_interpreter_path = "/ucrt64/bin/python3.exe"
+    pacman_pkg_cache_dir = PurePosixPath("/var/cache/pacman/pkg/")
+    python_pkg_archive_posix = PurePosixPath()
+    python_pkg_subsystem = ""
+    python_ver_major:int = 0
+    python_ver_minor:int = 0
+
+    python_found = False
+
+    # zip python library
+    mod_python_libs_dir = config.mod_root_dir / Path("python_libs")  # directory where archive with python libraries should be copied to
+    if not mod_python_libs_dir.exists():
+        mod_python_libs_dir.mkdir(parents=True)
+    elif not mod_python_libs_dir.is_dir():
+        print("ERROR: path for python libs exists and is not directory!!! aborting ")
+        return False
+
+    print("Searching for python interpreter...")
+    python_pkg = getMsysPackageInfoForFiles( [ PurePath(python_interpreter_path) ])
+    if python_pkg != None :
+        for pkgname, pkg in python_pkg.items():
+            if "python" in pkgname and python_interpreter_path in pkg['FILES']:
+                print(f"found python package : {pkgname} version {pkg['INFO']['Version']}")
+                python_found = True
+                python_pkg_archive_posix = pacman_pkg_cache_dir / (f"{pkgname}-{pkg['INFO']['Version']}-any.pkg.tar.zst")
+                ver_list = pkg['INFO']['Version'].split(".")
+                python_ver_major = int(ver_list[0])
+                python_ver_minor = int(ver_list[1])
+                python_pkg_subsystem = pkg['SUBSYSTEM']
+    
+    if not python_found:
+        print("ERROR: python package not found. Aborting!!!")
+        exit(1)
+
+    #python_libs_zip_output = mod_python_libs_dir / Path(f"python{python_ver_major}{python_ver_minor}")  # zip file extension will be added automaticly by shutil.make_archive
+    py_pkg_path = config.msys_root_dir_win / Path(python_pkg_archive_posix.relative_to("/"))  # windows path to python pkg archive
+    print("Making python libs zip archive")
+    print("from package:", str(py_pkg_path))
+
+    #check if python zip need updating. Condition: created archive older than curent python package from msys
+    dst_file = mod_python_libs_dir / Path(f"python{python_ver_major}{python_ver_minor}.zip")
+    py_pkg_path = config.msys_root_dir_win / Path(python_pkg_archive_posix.relative_to("/"))
+    create_python_archive = True
+    if dst_file.exists() :
+                src_stat = py_pkg_path.stat()
+                dst_file_stat = dst_file.stat()
+                if src_stat.st_mtime > dst_file_stat.st_mtime :
+                    dst_file.unlink()
+                else:
+                    create_python_archive = False
+
+    if create_python_archive:
+        tmp_dir = Path("makemod_tmp")
+        # tmp_package_name = python_pkg_archive_posix.stem
+        python_tmp_libs_dir = tmp_dir / "python_libs"  # path to directory containing extracted pkg file 
+
+        if python_tmp_libs_dir.is_dir() :
+            print("Cleaning tmp directory")
+            shutil.rmtree(python_tmp_libs_dir)
+
+        python_tmp_libs_dir.mkdir(parents=True)
+
+        #extract archive , use bsdtar becouse normal tar does not work
+        command = ["bsdtar","-x","-f",py_pkg_path,"-C",python_tmp_libs_dir,"--strip-components","3"]
+        for excl_path in python_lib_exclude:
+            command.append("--exclude")
+            command.append(f"{python_pkg_subsystem}/lib/python{python_ver_major}.{python_ver_minor}/{excl_path}")
+        command.append(f"{python_pkg_subsystem}/lib/python{python_ver_major}.{python_ver_minor}")  # extract only library files
+        print("DBG: tar command = ", command)
+
+        print("Unpacking package...")
+        subproc = subprocess.run(command,capture_output=False, text=False)
+        if subproc:
+            if subproc.returncode == 0:
+                print("Unpacking package complete")
+            else:
+                print("ERROR tar failed with return code ",subproc.returncode)
+                return None
+            #lines = subproc.stdout.splitlines()
+
+        print("zipping python libs...")
+        shutil.make_archive(str(dst_file.with_suffix("")), 'zip', str(python_tmp_libs_dir))
+        
+        # copy "lib-dynload" directory from python lib without zipping
+        # without these files embedded python can not open zip archive with library files
+        system_dynlib_path = python_tmp_libs_dir / Path("lib-dynload")
+        with os.scandir(system_dynlib_path) as dir_it:
+            for entry in dir_it:
+                if entry.is_file():
+                    copyToMod(config, system_dynlib_path / entry.name, Path(Path("python_libs/lib-dynload")))
+    else:
+        print("Python libs archive", str(dst_file), "is up to date. Skipping copying lib-dynload directory too!")
 
 
 def makeMod(config: MakeModConfig):
@@ -341,44 +437,8 @@ def makeMod(config: MakeModConfig):
 
     # TODO: copy qt imageformats from "share/qt5/plugins/imageformats" in msys
 
-    # zip python library
-    mod_python_libs_dir = config.mod_root_dir / Path("python_libs")
-    if not mod_python_libs_dir.exists():
-        mod_python_libs_dir.mkdir(parents=True)
-    elif not mod_python_libs_dir.is_dir():
-        print("ERROR: path for python libs exists and is not directory!!! aborting ")
-        return False
-
-    system_python_libs_dir = config.msys_prefix / Path("lib/python3.9") # TODO: get current python version from msys to replace hardcoded
-    python_libs_zip_output = mod_python_libs_dir/ Path("python39")  # zip file extension will be addes automaticly. TODO: get current python version from msys to replace hardcoded, update c++ code too
-    print("Making python libs zip file")
-    print("from directory:", str(system_python_libs_dir))
-
-    #check if python zip need updating. Condition: msys_prefix/bin/libpython3.9.dll newer than existing archive
-    dst_file = mod_python_libs_dir/ Path("python39.zip")
-    pydll_path = config.msys_prefix / Path("bin/libpython3.9.dll")
-    create_python_archive = True
-    if dst_file.exists() :
-                src_stat = pydll_path.stat()
-                dst_file_stat = dst_file.stat()
-                if src_stat.st_mtime > dst_file_stat.st_mtime :
-                    dst_file.unlink()
-                else:
-                    create_python_archive = False
-
-    if create_python_archive:
-        print("zipping python libs...")
-        shutil.make_archive(str(python_libs_zip_output), 'zip', str(system_python_libs_dir))
-        
-        # copy "lib-dynload" directory from python lib without zipping
-        # without these files embedded python can not open zip archive with library files
-        system_dynlib_path = system_python_libs_dir / Path("lib-dynload")
-        with os.scandir(system_dynlib_path) as dir_it:
-            for entry in dir_it:
-                if entry.is_file():
-                    copyToMod(config, system_dynlib_path / entry.name, Path(Path("python_libs/lib-dynload")))
-    else:
-        print("Python libs archive", str(dst_file), "is up to date. Skipping copying lib-dynload directory too!")
+    # make zip version of python library files 
+    makePythonLibrary(config)
 
     
     
@@ -399,8 +459,6 @@ def main():
         print("running in MSYS2 : ",g_config.msys, ", root dir = '",g_config.msys_root_dir_win,"'",sep="")
         print("with prefix =", g_config.msys_prefix)
         print("Mod Base directory:", g_config.mod_root_dir)
-
-        #print("dlls:", getDllsFromExecutable(g_config, g_config.nemesis_program_name))
 
         makeMod(g_config)
 
