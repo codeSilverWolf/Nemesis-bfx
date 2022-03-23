@@ -4,7 +4,9 @@
 //#define MS_NO_COREDLL
 #include <Python.h>
 #include <filesystem>
+#include <stdexcept>
 #include <string>
+#include <system_error>
 //#define pyslots
 
 #include <QtCore/QProcess>
@@ -128,7 +130,9 @@ void PythonScriptThread(const wstring& filename, const wchar_t* filepath)
         wstring msg = TextBoxMessage(1016) + L": " + filename;
         interMsg(msg);
         DebugLogging(msg);
-        _wfopen_s(&f, filepath, L"r");
+        _wfopen_s(&f, filepath, L"rb");
+        // from python documentation:
+        // On Windows, fp should be opened as binary mode (e.g. fopen(filename, "rb")). Otherwise, Python may not handle script file with LF line ending correctly.
 
         if (f)
         {
@@ -140,13 +144,23 @@ void PythonScriptThread(const wstring& filename, const wchar_t* filepath)
                 // Otherwise python can't unpack archive containing rest of libraries.
                 // Program name has to be set to nemesis main executable name.
 
+                #ifndef PYTHON_LIBS_ARCH_VER
+                    #error PYTHON_LIBS_ARCH_VER should be defined as (python_ver_major)(python_ver_minor) ex. 39 for python 3.9.x
+                #endif
+
                 std::filesystem::path current_path = std::filesystem::current_path();
-                std::filesystem::path python_lib_path = current_path / "python_libs/python39.zip";  // TODO: change this to get python version from Cmake
-                std::filesystem::path python_dynlib_path = current_path / "python_libs/lib-dynload";
+                std::filesystem::path python_lib_path = current_path / (std::wstring(L"python_libs\\python") + std::to_wstring(PYTHON_LIBS_ARCH_VER) + L".zip");
+                std::filesystem::path python_dynlib_path = current_path / L"python_libs\\lib-dynload";
 
                 std::wstring python_lib_paths = std::wstring(python_lib_path) + L";" + std::wstring(python_dynlib_path);
 
-                Py_SetProgramName(L"NemesisUnlimitedBehaviorEngine.exe");
+                std::error_code ec;
+                if (!std::filesystem::exists(python_lib_path, ec))
+                {
+                    throw std::runtime_error("Python library archive missing! It is NOT a script Error!!! Try reinstalling Nemesis-Bfx. Missing file: " + python_lib_path.u8string());
+                }
+
+                Py_SetProgramName(L"Nemesis Unlimited Behavior Engine.exe");
                 Py_SetPath(python_lib_paths.c_str());
 
                 Py_Initialize();

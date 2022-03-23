@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.19.0 FATAL_ERROR)
 
 project(NemesisUnlimitedBehaviorEngine LANGUAGES CXX VERSION 0.84)
 ################################################################################
@@ -316,6 +316,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     "WIN64"
 #    "_WIN32_WINNT=0x0601"
     "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING" #There are no alternatives
+    "PYTHON_LIBS_ARCH_VER=${Python_LIB_VERSION}"
     )
 
 ################################################################################

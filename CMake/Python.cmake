@@ -2,8 +2,8 @@
 # VARIABLES - Pre download
 ################################################################################
 
-set(Python_VERSION 3.9.7)
-set(Python_LIB_VERSION 39)
+#set(Python_VERSION 3.9.7)
+#set(Python_LIB_VERSION 39)
 
 
 ################################################################################
@@ -29,11 +29,13 @@ set(Python_LIB_VERSION 39)
 #     set(PYTHON_ROOT ${cpython_SOURCE_DIR} CACHE PATH "Python local path" FORCE)
 # endif()
 
-find_package (Python COMPONENTS Development )
+find_package (Python 3.7 COMPONENTS Development )
 
 if (Python_FOUND)
     message(STATUS "Python found: ${Python_VERSION}")
     message(STATUS "Python include dirs : ${Python_INCLUDE_DIRS}")
+
+    set(Python_LIB_VERSION "${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
 
 endif()
 
