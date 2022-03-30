@@ -151,9 +151,10 @@ def getMsysPackageInfoForFiles(filenames):
     cache_available = False
 
     cache_file = Path("makemod_pkg_cache.json")
-    with cache_file.open("r", encoding="utf-8") as cf:
-        packages = json.load(cf)
-        cache_available = True
+    if cache_file.is_file():
+        with cache_file.open("r", encoding="utf-8") as cf:
+            packages = json.load(cf)
+            cache_available = True
 
     for filename in filenames:
         # try to get file from already cached packages
@@ -434,6 +435,10 @@ def makeMod(config: MakeModConfig):
     
     # copy qt windows platform dll
     copyToMod(config, config.msys_prefix / Path("share/qt5/plugins/platforms/qwindows.dll"), Path("platforms"))
+
+    # copy qt imageformats dll
+    copyToMod(config, config.msys_prefix / Path("share/qt5/plugins/imageformats/qico.dll"), Path("imageformats"))
+    copyToMod(config, config.msys_prefix / Path("share/qt5/plugins/imageformats/qjpeg.dll"), Path("imageformats"))
 
     # TODO: copy qt imageformats from "share/qt5/plugins/imageformats" in msys
 
