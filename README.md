@@ -10,16 +10,16 @@ Nemesis Engine v0.84 beta is rather unstable. On my machine it can not even fini
 
 ## Main differences to original Nemesis
 - Only main executable "Nemesis Unlimited Behavior Engine.exe" and required libraries are provided, you need to get rest of mod (behavior files scripts etc.) from Nemesis v0.84beta.
-- focus on stability and bugfixes not performance. Multiple crash/bug fixes. Multithreading update/behavior generate is disabled for now.
-- build using different c++ compiler and libraries.
-- enabled message output to console when run from command prompt (cmd.exe or other console program). This can help debugging crashes that do not leave trace in log files.
-- support for python library files in one zip archive (2k files less needed in mod)
-- New bugs most likely introduced. Since Nemesis-bfx is based on newer unreleased code and generally Nemesis code looks like it is in middle of rather substantial changes. Building this with gcc for MSYS2 most likely introduced some subtle bugs. Backup your nemesis folder before overwriting with this.
+- Focus on stability and bugfixes not performance. Multiple crash/bug fixes. Multithreading update/behavior generate is disabled for now.
+- Should work with Skyrim installed to path containing non-ascii characters. Anything that is valid UTF-16.
+- Enabled message output to console when run from command prompt (cmd.exe or other console program). This can help debugging crashes that do not leave trace in log files.
+- Build using different c++ compiler and libraries.
+- Support for python library files in one zip archive (2k files less needed in mod)
+- New bugs most likely introduced. Since Nemesis-bfx is based on latest unreleased code from github and generally Nemesis code looks like it is in middle of rather substantial changes new bugs can happen. Building this with gcc for MSYS2 most likely introduced some subtle bugs. Backup your nemesis folder before overwriting with this.
 
 ## Project status
 
 - Works for me :) . No binary release or detailed instructions how to compile yet (on my TODO soon list).
-- does not work when Skyrim is installed in path which has non ASCII characters.
 - Generally i hope ShikyoKira can find some of my fixes usefull and incorporate them in Nemesis Unlimited Behavior Engine.
 
 ## How to compile
